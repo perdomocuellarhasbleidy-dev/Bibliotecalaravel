@@ -6,6 +6,7 @@ use App\Http\Controllers\DevolucionController;
 use App\Http\Controllers\LibroController;
 use App\Http\Controllers\MultaController;
 use App\Http\Controllers\PrestamoController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -180,12 +181,16 @@ Route::middleware(
         [DevolucionController::class, 'store']
     )->name('devoluciones.store');
 
+    Route::put(
+        '/devoluciones/{devolucion}',
+        [DevolucionController::class, 'update']
+    )->name('devoluciones.update');
 
-    /*
-    |--------------------------------------------------------------------------
-    | MULTAS
-    |--------------------------------------------------------------------------
-    */
+    Route::delete(
+        '/devoluciones/{devolucion}',
+        [DevolucionController::class, 'destroy']
+    )->name('devoluciones.destroy');
+
 
     Route::get(
         '/multas',
@@ -206,4 +211,9 @@ Route::middleware(
         '/multas/{multa}',
         [MultaController::class, 'destroy']
     )->name('multas.destroy');
+
+    Route::get(
+        '/reportes',
+        [ReporteController::class, 'index']
+    )->name('reportes.index');
 });

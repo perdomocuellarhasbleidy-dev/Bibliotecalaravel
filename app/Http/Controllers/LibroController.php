@@ -233,7 +233,7 @@ class LibroController extends Controller
                 ->route('dashboard', ['modulo' => 'libros'])
                 ->with(
                 'error',
-                'No se puede eliminar un libro que tiene préstamos o devoluciones.'
+                'No se puede eliminar este libro porque tiene préstamos o devoluciones registradas.'
                 );
         }
 

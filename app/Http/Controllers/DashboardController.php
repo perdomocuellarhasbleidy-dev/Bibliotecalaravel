@@ -86,6 +86,72 @@ class DashboardController extends Controller
                 $datos['rechazados'] = Prestamo::whereIn('estado', ['Rechazado', 'Rechazados'])->count();
             }
 
+            if ($request->input('modulo') === 'devoluciones') {
+                $buscarDevoluciones = trim($request->input('buscar', ''));
+
+                $datos['modulo'] = 'devoluciones';
+                $datos['buscarDevoluciones'] = $buscarDevoluciones;
+                $datos['devoluciones'] = Devolucion::with(['prestamo', 'libro', 'usuario'])
+                    ->when($buscarDevoluciones, function ($query) use ($buscarDevoluciones) {
+                        $query->where(function ($query) use ($buscarDevoluciones) {
+                            $query->where('estado', 'like', "%{$buscarDevoluciones}%")
+                                ->orWhere('fecha_devolucion', 'like', "%{$buscarDevoluciones}%")
+                                ->orWhereHas('libro', function ($libro) use ($buscarDevoluciones) {
+                                    $libro->where('titulo', 'like', "%{$buscarDevoluciones}%");
+                                })
+                                ->orWhereHas('usuario', function ($usuario) use ($buscarDevoluciones) {
+                                    $usuario->where('nombre', 'like', "%{$buscarDevoluciones}%")
+                                        ->orWhere('documento', 'like', "%{$buscarDevoluciones}%");
+                                });
+                        });
+                    })
+                    ->orderByDesc('iddevolucion')
+                    ->paginate(5)
+                    ->withQueryString();
+                $datos['totalDevoluciones'] = Devolucion::count();
+                $datos['prestamosDisponibles'] = Prestamo::with(['libro', 'usuario'])
+                    ->whereIn('estado', ['Activo', 'Pendiente', 'Vencido'])
+                    ->whereDoesntHave('devolucion')
+                    ->orderByDesc('idprestamo')
+                    ->get();
+                $datos['prestamosParaEditar'] = Prestamo::with(['libro', 'usuario'])
+                    ->orderByDesc('idprestamo')
+                    ->get();
+            }
+
+            if ($request->input('modulo') === 'multas') {
+                $buscarMultas = trim($request->input('buscar', ''));
+
+                $datos['modulo'] = 'multas';
+                $datos['buscarMultas'] = $buscarMultas;
+                $datos['multas'] = Multa::with('prestamo.libro', 'prestamo.usuario')
+                    ->when($buscarMultas, function ($query) use ($buscarMultas) {
+                        $query->where(function ($query) use ($buscarMultas) {
+                            $query->where('motivo', 'like', "%{$buscarMultas}%")
+                                ->orWhere('fecha', 'like', "%{$buscarMultas}%")
+                                ->orWhere('valor', 'like', "%{$buscarMultas}%")
+                                ->orWhereHas('prestamo.libro', function ($libro) use ($buscarMultas) {
+                                    $libro->where('titulo', 'like', "%{$buscarMultas}%");
+                                })
+                                ->orWhereHas('prestamo.usuario', function ($usuario) use ($buscarMultas) {
+                                    $usuario->where('nombre', 'like', "%{$buscarMultas}%")
+                                        ->orWhere('documento', 'like', "%{$buscarMultas}%");
+                                });
+                        });
+                    })
+                    ->orderByDesc('idmulta')
+                    ->paginate(5)
+                    ->withQueryString();
+                $datos['totalMultas'] = Multa::count();
+                $datos['prestamosParaMulta'] = Prestamo::with(['libro', 'usuario'])
+                    ->orderByDesc('idprestamo')
+                    ->get();
+            }
+
+            if ($request->input('modulo') === 'reportes') {
+                return redirect()->route('reportes.index', $request->query());
+            }
+
             return view('dashboard.inicio', $datos);
         }
 

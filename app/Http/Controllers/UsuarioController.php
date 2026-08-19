@@ -140,7 +140,7 @@ class UsuarioController extends Controller
         if ($usuario->prestamos()->exists() || $usuario->devoluciones()->exists()) {
             return redirect()
                 ->route('usuarios.index')
-                ->with('error', 'No se puede eliminar un beneficiario con préstamos o devoluciones.');
+                ->with('error', 'No se pudo eliminar el beneficiario. Puede estar relacionado con préstamos o registros del sistema.');
         }
 
         $usuario->delete();

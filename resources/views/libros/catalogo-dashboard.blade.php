@@ -1,7 +1,7 @@
 <style>
     .dashboard-books { color: #3d2617; }
     .dashboard-books .book-success { margin-bottom: 25px; padding: 20px; border: 1px solid #a6f0bd; border-radius: 18px; background: #effff3; color: #087d35; font-size: 15px; }
-    .dashboard-books .book-error { margin-bottom: 25px; padding: 20px; border: 1px solid #f2aaaa; border-radius: 18px; background: #fff0f0; color: #a12626; font-size: 15px; }
+    .dashboard-books .book-error { margin-bottom: 25px; padding: 20px; border-radius: 8px; background: #f44343; color: #fff; font-size: 15px; }
     .dashboard-books .books-hero { display: flex; align-items: center; justify-content: space-between; min-height: 118px; margin-bottom: 25px; padding: 25px 34px; border-radius: 23px; background: linear-gradient(110deg, #5d351b, #3d2110); box-shadow: 0 8px 14px rgba(62,36,19,.14); }
     .dashboard-books .books-hero h2 { margin: 0; color: #fff; font-size: 31px; }
     .dashboard-books .add-book-button { padding: 16px 25px; border-radius: 16px; background: #fff; color: #3d2617; font-weight: 700; text-decoration: none; }

@@ -276,6 +276,15 @@
             padding-left: 20px;
         }
 
+        .beneficiary-error-alert {
+            margin-bottom: 25px;
+            padding: 18px;
+            border-radius: 8px;
+            background: #f44343;
+            color: white;
+            font-size: 15px;
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -404,6 +413,80 @@
 
         .edit-beneficiary-trigger {
             background: #3b82f6;
+        }
+
+        .beneficiary-delete-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .48);
+        }
+
+        .beneficiary-delete-modal.is-open {
+            display: flex;
+        }
+
+        .beneficiary-delete-box {
+            width: min(520px, 100%);
+            padding: 40px 32px 27px;
+            border-radius: 5px;
+            background: #f5efe6;
+            text-align: center;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, .28);
+        }
+
+        .beneficiary-warning {
+            width: 88px;
+            height: 88px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 34px;
+            border: 4px solid #ffc080;
+            border-radius: 50%;
+            color: #ffbd7c;
+            font-size: 46px;
+        }
+
+        .beneficiary-delete-box h2 {
+            margin: 0 0 20px;
+            color: #3e2618;
+            font-size: 29px;
+        }
+
+        .beneficiary-delete-box p {
+            margin: 0 0 30px;
+            color: #654b39;
+            font-size: 17px;
+        }
+
+        .beneficiary-delete-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .beneficiary-delete-actions button {
+            height: 46px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 4px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .confirm-beneficiary-delete {
+            background: #75461f;
+        }
+
+        .cancel-beneficiary-delete {
+            background: #aeb8c7;
         }
 
         @media (max-width: 650px) {
@@ -609,6 +692,12 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="beneficiary-error-alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="page-banner">
                 <h2>Gestión de Beneficiarios</h2>
             </div>
@@ -653,7 +742,7 @@
                                 <form action="{{ route('usuarios.destroy', $usuario->id_usuario) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-icon btn-delete" onclick="return confirm('¿Seguro que deseas eliminar este beneficiario?')"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="button" class="btn-icon btn-delete open-beneficiary-delete" data-delete-beneficiary="delete-beneficiary-{{ $usuario->id_usuario }}"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -699,6 +788,24 @@
                                     <button type="submit" class="modal-save">Actualizar Beneficiario</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+
+            @foreach($usuarios as $usuario)
+                <div class="beneficiary-delete-modal" id="delete-beneficiary-{{ $usuario->id_usuario }}" role="dialog" aria-modal="true" aria-labelledby="delete-beneficiary-title-{{ $usuario->id_usuario }}">
+                    <div class="beneficiary-delete-box">
+                        <div class="beneficiary-warning">!</div>
+                        <h2 id="delete-beneficiary-title-{{ $usuario->id_usuario }}">¿Eliminar beneficiario?</h2>
+                        <p>Esta acción eliminará el beneficiario del sistema.</p>
+                        <div class="beneficiary-delete-actions">
+                            <form action="{{ route('usuarios.destroy', $usuario->id_usuario) }}" method="POST" class="delete-beneficiary-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="confirm-beneficiary-delete">Sí, eliminar</button>
+                            </form>
+                            <button type="button" class="cancel-beneficiary-delete">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -854,6 +961,22 @@
     });
 
     document.querySelectorAll('.edit-beneficiary-modal').forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.classList.remove('is-open');
+        });
+    });
+
+    document.querySelectorAll('.open-beneficiary-delete').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.getElementById(button.dataset.deleteBeneficiary).classList.add('is-open');
+        });
+    });
+
+    document.querySelectorAll('.cancel-beneficiary-delete').forEach((button) => {
+        button.addEventListener('click', () => button.closest('.beneficiary-delete-modal').classList.remove('is-open'));
+    });
+
+    document.querySelectorAll('.beneficiary-delete-modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
             if (event.target === modal) modal.classList.remove('is-open');
         });

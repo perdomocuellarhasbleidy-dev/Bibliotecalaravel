@@ -517,17 +517,17 @@
                 <span>Préstamos</span>
             </a>
 
-            <a href="{{ route('devoluciones.index') }}">
+            <a href="{{ route('dashboard', ['modulo' => 'devoluciones']) }}">
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>Devolución</span>
             </a>
 
-            <a href="{{ route('multas.index') }}">
+            <a href="{{ route('dashboard', ['modulo' => 'multas']) }}">
                 <i class="fa-solid fa-file-invoice-dollar"></i>
                 <span>Multa</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('reportes.index') }}">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Reporte</span>
             </a>
@@ -549,7 +549,7 @@
 
         <header class="topbar">
 
-            <h1>{{ isset($modulo) ? ($modulo === 'libros' ? 'Libros' : ($modulo === 'prestamos' ? 'Gestión de Préstamos' : 'Inicio')) : 'Inicio' }}</h1>
+            <h1>{{ isset($modulo) ? ($modulo === 'libros' ? 'Libros' : ($modulo === 'prestamos' ? 'Gestión de Préstamos' : ($modulo === 'devoluciones' ? 'Gestión de Devoluciones' : ($modulo === 'multas' ? 'Gestión de Multas' : 'Inicio')))) : 'Inicio' }}</h1>
 
 
             <div class="user">
@@ -584,6 +584,10 @@
                 @include('libros.catalogo-dashboard')
             @elseif(isset($modulo) && $modulo === 'prestamos')
                 @include('prestamos.dashboard')
+            @elseif(isset($modulo) && $modulo === 'devoluciones')
+                @include('devoluciones.dashboard')
+            @elseif(isset($modulo) && $modulo === 'multas')
+                @include('multas.dashboard')
             @else
             <div class="welcome">
 
