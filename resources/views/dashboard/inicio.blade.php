@@ -497,32 +497,32 @@
 
         <nav class="menu">
 
-            <a href="#" class="active">
+            <a href="{{ route('dashboard') }}" class="active">
                 <i class="fa-solid fa-house"></i>
                 <span>Inicio</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('usuarios.index') }}">
                 <i class="fa-solid fa-users"></i>
                 <span>Beneficiarios</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('dashboard', ['modulo' => 'libros']) }}">
                 <i class="fa-solid fa-book"></i>
                 <span>Libros</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('prestamos.index') }}">
                 <i class="fa-solid fa-hand-holding-heart"></i>
                 <span>Préstamos</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('devoluciones.index') }}">
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>Devolución</span>
             </a>
 
-            <a href="#">
+            <a href="{{ route('multas.index') }}">
                 <i class="fa-solid fa-file-invoice-dollar"></i>
                 <span>Multa</span>
             </a>
@@ -532,7 +532,10 @@
                 <span>Reporte</span>
             </a>
 
-            <a href="#">
+            <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display:none;">
+                @csrf
+            </form>
+            <a href="#" onclick="document.getElementById('logout-form').submit();">
                 <i class="fa-solid fa-power-off"></i>
                 <span>Cerrar Sesión</span>
             </a>
@@ -546,9 +549,7 @@
 
         <header class="topbar">
 
-            <h1>
-                Inicio
-            </h1>
+            <h1>{{ isset($modulo) && $modulo === 'libros' ? 'Libros' : 'Inicio' }}</h1>
 
 
             <div class="user">
@@ -579,6 +580,9 @@
         <section class="content">
 
 
+            @if(isset($modulo) && $modulo === 'libros')
+                @include('libros.catalogo-dashboard')
+            @else
             <div class="welcome">
 
                 <h2>
@@ -735,6 +739,7 @@
                 </div>
 
             </footer>
+            @endif
 
         </section>
 

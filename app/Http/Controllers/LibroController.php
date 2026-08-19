@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Autor;
 use App\Models\Libro;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LibroController extends Controller
 {
@@ -19,6 +20,11 @@ class LibroController extends Controller
         );
 
         $libros = Libro::with('autor')
+                ->withCount([
+                    'prestamos as prestamos_activos_count' => function ($query) {
+                        $query->whereIn('estado', ['Activo', 'Pendiente', 'Vencido']);
+                    },
+                ])
             ->when(
                 $buscar,
                 function ($query) use ($buscar) {
@@ -124,15 +130,25 @@ class LibroController extends Controller
                 'min:1000',
                 'max:2100'
             ],
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
         ]);
+
+        if ($request->hasFile('imagen')) {
+            $datos['imagen'] = $request->file('imagen')->store('libros', 'public');
+        }
 
         Libro::create($datos);
 
         return redirect()
-            ->route('libros.index')
+            ->route('dashboard', ['modulo' => 'libros'])
             ->with(
                 'success',
-                'Libro registrado correctamente.'
+                'Libro guardado correctamente.'
             );
     }
 
@@ -180,12 +196,26 @@ class LibroController extends Controller
                 'min:1000',
                 'max:2100'
             ],
+            'imagen' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
         ]);
+
+        if ($request->hasFile('imagen')) {
+            if ($libro->imagen) {
+                Storage::disk('public')->delete($libro->imagen);
+            }
+
+            $datos['imagen'] = $request->file('imagen')->store('libros', 'public');
+        }
 
         $libro->update($datos);
 
         return redirect()
-            ->route('libros.index')
+            ->route('dashboard', ['modulo' => 'libros'])
             ->with(
                 'success',
                 'Libro actualizado correctamente.'
@@ -205,6 +235,10 @@ class LibroController extends Controller
             );
         }
 
+        if ($libro->imagen) {
+            Storage::disk('public')->delete($libro->imagen);
+        }
+
         $libro->delete();
 
         return back()->with(
@@ -215,6 +249,9 @@ class LibroController extends Controller
 
     public function catalogo(Request $request)
     {
-        return $this->index($request);
+        return redirect()->route('dashboard', array_merge(
+            ['modulo' => 'libros'],
+            $request->query()
+        ));
     }
 }

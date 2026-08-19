@@ -17,6 +17,7 @@ class Libro extends Model
         'titulo',
         'categoria',
         'año_publicacion',
+        'imagen',
         'consultar_libro',
     ];
 

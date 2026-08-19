@@ -87,7 +87,12 @@ Route::middleware(
     Route::resource(
         'libros',
         LibroController::class
-    )->except(['show']);
+    )->except(['show', 'index']);
+
+    Route::get(
+        '/libros',
+        [LibroController::class, 'catalogo']
+    )->name('libros.index');
 
 
     /*

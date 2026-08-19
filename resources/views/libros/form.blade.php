@@ -66,6 +66,24 @@
         value="{{ old('año_publicacion', $libro->año_publicacion ?? '') }}"
     >
 
+    <label>
+        Imagen de portada
+    </label>
+
+    <input
+        type="file"
+        name="imagen"
+        accept="image/jpeg,image/png,image/webp"
+    >
+
+    @if(!empty($libro?->imagen))
+        <img
+            src="{{ asset('storage/' . $libro->imagen) }}"
+            alt="Portada de {{ $libro->titulo }}"
+            style="width: 84px; height: 118px; object-fit: cover; margin: 8px 0 15px; border-radius: 8px;"
+        >
+    @endif
+
 
     <br>
 

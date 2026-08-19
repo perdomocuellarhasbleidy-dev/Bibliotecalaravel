@@ -10,7 +10,8 @@
 
 <form
     action="{{ route('libros.update', $libro) }}"
-    method="POST">
+    method="POST"
+    enctype="multipart/form-data">
 
     @csrf
 

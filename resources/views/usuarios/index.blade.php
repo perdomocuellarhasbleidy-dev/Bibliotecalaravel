@@ -221,6 +221,17 @@
             color: #a9a9a9;
         }
 
+        .search-form {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            margin: 0;
+        }
+
+        .search-form .toolbar-search {
+            min-width: 0;
+        }
+
         .btn {
             padding: 14px 24px;
             border: none;
@@ -240,6 +251,176 @@
 
         .btn-nuevo {
             background: #573b29;
+        }
+
+        .alert-success {
+            margin-bottom: 25px;
+            padding: 18px;
+            border-radius: 8px;
+            background: #20c95a;
+            color: white;
+            font-size: 15px;
+        }
+
+        .alert-error {
+            margin-bottom: 22px;
+            padding: 12px 16px;
+            border: 1px solid #e2b8b8;
+            border-radius: 2px;
+            background: #fff0f0;
+            color: #8c2929;
+        }
+
+        .alert-error ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .48);
+        }
+
+        .modal-overlay.is-open {
+            display: flex;
+        }
+
+        .beneficiary-modal {
+            width: min(798px, 100%);
+            background: #f5efe6;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, .3);
+        }
+
+        .modal-header {
+            padding: 28px 34px 26px;
+            border-bottom: 1px solid #bdb5ab;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #8a633d;
+            font-size: 27px;
+            font-weight: 400;
+        }
+
+        .modal-header strong {
+            color: #3f2919;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 31px 34px 28px;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px 50px;
+        }
+
+        .modal-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 10px;
+            color: #704723;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .modal-body input {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid #cbd2da;
+            border-radius: 2px;
+            background: #fff;
+            font: inherit;
+            outline: none;
+        }
+
+        .modal-body input:focus {
+            border-color: #81522d;
+        }
+
+        .modal-password {
+            position: relative;
+        }
+
+        .modal-password input {
+            padding-right: 42px;
+        }
+
+        .modal-password button {
+            position: absolute;
+            top: 50%;
+            right: 11px;
+            padding: 0;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #566170;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+            margin-top: 84px;
+        }
+
+        .modal-actions button,
+        .modal-actions a {
+            height: 35px;
+            padding: 0 22px;
+            border: 0;
+            border-radius: 2px;
+            font: 700 13px "Segoe UI", Arial, sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .modal-cancel {
+            min-width: 93px;
+            background: #fff;
+            color: #7b5837;
+        }
+
+        .modal-save {
+            min-width: 190px;
+            background: #653a1e;
+            color: #fff;
+        }
+
+        @media (max-width: 650px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-field-full {
+                grid-column: auto;
+            }
+
+            .modal-header,
+            .modal-body {
+                padding-left: 22px;
+                padding-right: 22px;
+            }
+
+            .modal-actions {
+                gap: 10px;
+                margin-top: 45px;
+            }
         }
 
         .table-container {
@@ -292,6 +473,55 @@
 
         .btn-delete {
             background: #ef4444;
+        }
+
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .pagination-wrapper nav {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: #f5f2ef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .pagination-wrapper nav a,
+        .pagination-wrapper nav span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            height: 42px;
+            padding: 0 14px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+            color: #555;
+            text-decoration: none;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .pagination-wrapper nav a:hover {
+            background: #ebe6e0;
+        }
+
+        .pagination-wrapper nav .active-page {
+            background: white;
+            color: #75461f;
+            font-weight: bold;
+            border: 2px solid #75461f;
+            border-radius: 6px;
+        }
+
+        .pagination-wrapper nav .disabled {
+            color: #bbb;
+            cursor: default;
         }
     </style>
 </head>
@@ -369,6 +599,12 @@
 
         <section class="content">
 
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="page-banner">
                 <h2>Gestión de Beneficiarios</h2>
             </div>
@@ -376,13 +612,14 @@
             <div class="toolbar">
                 <div class="toolbar-stat">
                     <span>Beneficiarios encontrados</span>
-                    <strong>{{ count($usuarios) }}</strong>
+                    <strong>{{ $usuarios->total() }}</strong>
                 </div>
 
-                <input type="text" class="toolbar-search" placeholder="Buscar por nombre, documento, teléfono o correo...">
-
-                <button class="btn btn-buscar">Buscar</button>
-                <a href="{{ route('usuarios.create') }}" class="btn btn-nuevo">+ Nuevo Beneficiario</a>
+                <form action="{{ route('usuarios.index') }}" method="GET" class="search-form">
+                    <input type="text" name="buscar" class="toolbar-search" value="{{ request('buscar') }}" placeholder="Buscar por nombre, documento, teléfono o correo...">
+                    <button type="submit" class="btn btn-buscar">Buscar</button>
+                </form>
+                <button type="button" class="btn btn-nuevo" id="open-beneficiary-modal">+ Nuevo Beneficiario</button>
             </div>
 
             <div class="table-container">
@@ -421,11 +658,143 @@
                 </table>
             </div>
 
+            @if($usuarios->hasPages())
+            <div class="pagination-wrapper">
+                <nav>
+                    {{-- Primera página --}}
+                    @if($usuarios->onFirstPage())
+                        <span class="disabled">&laquo;</span>
+                    @else
+                        <a href="{{ $usuarios->url(1) }}">&laquo;</a>
+                    @endif
+
+                    {{-- Anterior --}}
+                    @if($usuarios->onFirstPage())
+                        <span class="disabled">&lsaquo; Anterior</span>
+                    @else
+                        <a href="{{ $usuarios->previousPageUrl() }}">&lsaquo; Anterior</a>
+                    @endif
+
+                    {{-- Números de página --}}
+                    @for($i = 1; $i <= $usuarios->lastPage(); $i++)
+                        @if($i == $usuarios->currentPage())
+                            <span class="active-page">{{ $i }}</span>
+                        @else
+                            <a href="{{ $usuarios->url($i) }}">{{ $i }}</a>
+                        @endif
+                    @endfor
+
+                    {{-- Siguiente --}}
+                    @if($usuarios->hasMorePages())
+                        <a href="{{ $usuarios->nextPageUrl() }}">Siguiente &rsaquo;</a>
+                    @else
+                        <span class="disabled">Siguiente &rsaquo;</span>
+                    @endif
+
+                    {{-- Última página --}}
+                    @if($usuarios->hasMorePages())
+                        <a href="{{ $usuarios->url($usuarios->lastPage()) }}">&raquo;</a>
+                    @else
+                        <span class="disabled">&raquo;</span>
+                    @endif
+                </nav>
+            </div>
+            @endif
+
         </section>
 
     </main>
 
 </div>
+
+<div class="modal-overlay{{ $errors->any() ? ' is-open' : '' }}" id="beneficiary-modal" role="dialog" aria-modal="true" aria-labelledby="beneficiary-modal-title">
+    <div class="beneficiary-modal">
+        <div class="modal-header">
+            <h2 id="beneficiary-modal-title">Agregar <strong>Beneficiario</strong></h2>
+        </div>
+
+        <div class="modal-body">
+            @if($errors->any())
+                <div class="alert alert-error">
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form action="{{ route('usuarios.store') }}" method="POST">
+                @csrf
+                <div class="modal-grid">
+                    <div class="modal-field-full">
+                        <label for="modal-nombre">Nombre completo</label>
+                        <input type="text" id="modal-nombre" name="nombre" value="{{ old('nombre') }}" required autofocus>
+                    </div>
+
+                    <div>
+                        <label for="modal-documento">Documento</label>
+                        <input type="text" id="modal-documento" name="documento" value="{{ old('documento') }}" required>
+                    </div>
+
+                    <div>
+                        <label for="modal-telefono">Teléfono</label>
+                        <input type="text" id="modal-telefono" name="telefono" value="{{ old('telefono') }}">
+                    </div>
+
+                    <div class="modal-field-full">
+                        <label for="modal-correo">Correo Electrónico</label>
+                        <input type="email" id="modal-correo" name="correo" value="{{ old('correo') }}" required>
+                    </div>
+
+                    <div class="modal-field-full">
+                        <label for="modal-password">Contraseña</label>
+                        <div class="modal-password">
+                            <input type="password" id="modal-password" name="password" required>
+                            <button type="button" id="toggle-modal-password" aria-label="Mostrar contraseña">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="modal-cancel" id="close-beneficiary-modal">Cancelar</button>
+                    <button type="submit" class="modal-save">Guardar Beneficiario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const beneficiaryModal = document.getElementById('beneficiary-modal');
+    const openBeneficiaryModal = document.getElementById('open-beneficiary-modal');
+    const closeBeneficiaryModal = document.getElementById('close-beneficiary-modal');
+    const modalPassword = document.getElementById('modal-password');
+    const toggleModalPassword = document.getElementById('toggle-modal-password');
+
+    openBeneficiaryModal.addEventListener('click', () => {
+        beneficiaryModal.classList.add('is-open');
+        document.getElementById('modal-nombre').focus();
+    });
+
+    closeBeneficiaryModal.addEventListener('click', () => {
+        beneficiaryModal.classList.remove('is-open');
+    });
+
+    beneficiaryModal.addEventListener('click', (event) => {
+        if (event.target === beneficiaryModal) {
+            beneficiaryModal.classList.remove('is-open');
+        }
+    });
+
+    toggleModalPassword.addEventListener('click', () => {
+        const isPassword = modalPassword.type === 'password';
+        modalPassword.type = isPassword ? 'text' : 'password';
+        toggleModalPassword.innerHTML = `<i class="fa-solid fa-eye${isPassword ? '-slash' : ''}"></i>`;
+    });
+</script>
 
 </body>
 
