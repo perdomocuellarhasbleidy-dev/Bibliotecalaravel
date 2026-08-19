@@ -229,10 +229,12 @@ class LibroController extends Controller
             ||
             $libro->devoluciones()->exists()
         ) {
-            return back()->with(
+            return redirect()
+                ->route('dashboard', ['modulo' => 'libros'])
+                ->with(
                 'error',
                 'No se puede eliminar un libro que tiene préstamos o devoluciones.'
-            );
+                );
         }
 
         if ($libro->imagen) {
@@ -241,10 +243,12 @@ class LibroController extends Controller
 
         $libro->delete();
 
-        return back()->with(
+        return redirect()
+            ->route('dashboard', ['modulo' => 'libros', 'mensaje' => 'eliminado'])
+            ->with(
             'success',
-            'Libro eliminado correctamente.'
-        );
+                'Libro eliminado exitosamente.'
+            );
     }
 
     public function catalogo(Request $request)

@@ -512,7 +512,7 @@
                 <span>Libros</span>
             </a>
 
-            <a href="{{ route('prestamos.index') }}">
+            <a href="{{ route('dashboard', ['modulo' => 'prestamos']) }}">
                 <i class="fa-solid fa-hand-holding-heart"></i>
                 <span>Préstamos</span>
             </a>
@@ -549,7 +549,7 @@
 
         <header class="topbar">
 
-            <h1>{{ isset($modulo) && $modulo === 'libros' ? 'Libros' : 'Inicio' }}</h1>
+            <h1>{{ isset($modulo) ? ($modulo === 'libros' ? 'Libros' : ($modulo === 'prestamos' ? 'Gestión de Préstamos' : 'Inicio')) : 'Inicio' }}</h1>
 
 
             <div class="user">
@@ -582,6 +582,8 @@
 
             @if(isset($modulo) && $modulo === 'libros')
                 @include('libros.catalogo-dashboard')
+            @elseif(isset($modulo) && $modulo === 'prestamos')
+                @include('prestamos.dashboard')
             @else
             <div class="welcome">
 

@@ -58,6 +58,34 @@ class DashboardController extends Controller
                 $datos['autores'] = Autor::orderBy('nombre')->get();
             }
 
+            if ($request->input('modulo') === 'prestamos') {
+                $buscarPrestamos = trim($request->input('buscar', ''));
+
+                $datos['modulo'] = 'prestamos';
+                $datos['buscarPrestamos'] = $buscarPrestamos;
+                $datos['prestamos'] = Prestamo::with(['libro', 'usuario', 'devolucion'])
+                    ->when($buscarPrestamos, function ($query) use ($buscarPrestamos) {
+                        $query->where(function ($query) use ($buscarPrestamos) {
+                            $query->where('estado', 'like', "%{$buscarPrestamos}%")
+                                ->orWhere('fecha_prestamo', 'like', "%{$buscarPrestamos}%")
+                                ->orWhereHas('libro', function ($libro) use ($buscarPrestamos) {
+                                    $libro->where('titulo', 'like', "%{$buscarPrestamos}%");
+                                })
+                                ->orWhereHas('usuario', function ($usuario) use ($buscarPrestamos) {
+                                    $usuario->where('nombre', 'like', "%{$buscarPrestamos}%")
+                                        ->orWhere('documento', 'like', "%{$buscarPrestamos}%");
+                                });
+                        });
+                    })
+                    ->orderByDesc('idprestamo')
+                    ->paginate(6)
+                    ->withQueryString();
+                $datos['totalPrestamos'] = Prestamo::count();
+                $datos['activos'] = Prestamo::where('estado', 'Activo')->count();
+                $datos['devueltos'] = Prestamo::whereIn('estado', ['Devuelto', 'Devueltos'])->count();
+                $datos['rechazados'] = Prestamo::whereIn('estado', ['Rechazado', 'Rechazados'])->count();
+            }
+
             return view('dashboard.inicio', $datos);
         }
 

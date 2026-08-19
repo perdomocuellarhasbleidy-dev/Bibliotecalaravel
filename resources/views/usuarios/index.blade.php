@@ -402,6 +402,10 @@
             color: #fff;
         }
 
+        .edit-beneficiary-trigger {
+            background: #3b82f6;
+        }
+
         @media (max-width: 650px) {
             .modal-grid {
                 grid-template-columns: 1fr;
@@ -645,7 +649,7 @@
                             <td>{{ $usuario->email }}</td>
                             <td>{{ $usuario->rol->descripcion ?? 'Beneficiario' }}</td>
                             <td>
-                                <a href="{{ route('usuarios.edit', $usuario->id_usuario) }}" class="btn-icon btn-edit"><i class="fa-solid fa-pen"></i></a>
+                                <button type="button" class="btn-icon edit-beneficiary-trigger" data-edit-beneficiary="edit-beneficiary-{{ $usuario->id_usuario }}"><i class="fa-solid fa-pen"></i></button>
                                 <form action="{{ route('usuarios.destroy', $usuario->id_usuario) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -657,6 +661,48 @@
                     </tbody>
                 </table>
             </div>
+
+            @foreach($usuarios as $usuario)
+                <div class="modal-overlay edit-beneficiary-modal" id="edit-beneficiary-{{ $usuario->id_usuario }}" role="dialog" aria-modal="true" aria-labelledby="edit-beneficiary-title-{{ $usuario->id_usuario }}">
+                    <div class="beneficiary-modal">
+                        <div class="modal-header">
+                            <h2 id="edit-beneficiary-title-{{ $usuario->id_usuario }}">Editar <strong>Beneficiario</strong></h2>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('usuarios.update', $usuario->id_usuario) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-grid">
+                                    <div class="modal-field-full">
+                                        <label for="edit-name-{{ $usuario->id_usuario }}">Nombre completo</label>
+                                        <input type="text" id="edit-name-{{ $usuario->id_usuario }}" name="nombre" value="{{ $usuario->nombre }}" required>
+                                    </div>
+                                    <div>
+                                        <label for="edit-document-{{ $usuario->id_usuario }}">Documento</label>
+                                        <input type="text" id="edit-document-{{ $usuario->id_usuario }}" name="documento" value="{{ $usuario->documento }}" required>
+                                    </div>
+                                    <div>
+                                        <label for="edit-phone-{{ $usuario->id_usuario }}">Teléfono</label>
+                                        <input type="text" id="edit-phone-{{ $usuario->id_usuario }}" name="telefono" value="{{ $usuario->telefono }}">
+                                    </div>
+                                    <div class="modal-field-full">
+                                        <label for="edit-email-{{ $usuario->id_usuario }}">Correo Electrónico</label>
+                                        <input type="email" id="edit-email-{{ $usuario->id_usuario }}" name="correo" value="{{ $usuario->email }}" required>
+                                    </div>
+                                    <div class="modal-field-full">
+                                        <label for="edit-password-{{ $usuario->id_usuario }}">Nueva contraseña</label>
+                                        <input type="password" id="edit-password-{{ $usuario->id_usuario }}" name="password" placeholder="Déjala vacía si no deseas cambiarla">
+                                    </div>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="modal-cancel close-edit-beneficiary">Cancelar</button>
+                                    <button type="submit" class="modal-save">Actualizar Beneficiario</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
 
             @if($usuarios->hasPages())
             <div class="pagination-wrapper">
@@ -793,6 +839,24 @@
         const isPassword = modalPassword.type === 'password';
         modalPassword.type = isPassword ? 'text' : 'password';
         toggleModalPassword.innerHTML = `<i class="fa-solid fa-eye${isPassword ? '-slash' : ''}"></i>`;
+    });
+
+    document.querySelectorAll('.edit-beneficiary-trigger').forEach((button) => {
+        button.addEventListener('click', () => {
+            const modal = document.getElementById(button.dataset.editBeneficiary);
+            modal.classList.add('is-open');
+            modal.querySelector('input[name="nombre"]').focus();
+        });
+    });
+
+    document.querySelectorAll('.close-edit-beneficiary').forEach((button) => {
+        button.addEventListener('click', () => button.closest('.edit-beneficiary-modal').classList.remove('is-open'));
+    });
+
+    document.querySelectorAll('.edit-beneficiary-modal').forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.classList.remove('is-open');
+        });
     });
 </script>
 
