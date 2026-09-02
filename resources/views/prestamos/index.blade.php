@@ -105,8 +105,24 @@
                                 <td>{{ $prestamo->usuario->documento ?? '-' }}</td>
                                 <td>{{ optional($prestamo->fecha_prestamo)->format('Y-m-d') ?? '-' }}</td>
                                 <td>{{ optional($prestamo->devolucion?->fecha_devolucion)->format('Y-m-d') ?? '-' }}</td>
-                                <td><span class="status {{ str_contains($estado, 'activo') ? 'status-active' : (str_contains($estado, 'rechaz') ? 'status-rejected' : 'status-returned') }}">{{ $prestamo->estado }}</span></td>
-                                <td><form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST" onsubmit="return confirm('¿Eliminar este préstamo?')">@csrf @method('DELETE')<button class="delete-loan" type="submit" title="Eliminar préstamo"><i class="fa-solid fa-trash"></i></button></form></td>
+                                <td><span class="status {{ str_contains($estado, 'activo') ? 'status-active' : (str_contains($estado, 'rechaz') ? 'status-rejected' : (str_contains($estado, 'pend') ? 'status-rejected' : 'status-returned')) }}" style="{{ str_contains($estado, 'pend') ? 'background:#fff8e1; color:#b78103;' : '' }}">{{ $prestamo->estado }}</span></td>
+                                <td>
+                                    <div style="display:flex; gap:6px; align-items:center;">
+                                        @if(strtolower($prestamo->estado ?? '') === 'pendiente')
+                                            <form action="{{ route('prestamos.estado', $prestamo) }}" method="POST" style="margin:0;">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="estado" value="Activo">
+                                                <button type="submit" style="background:#0a8b45; color:#fff; border:0; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">Aprobar</button>
+                                            </form>
+                                            <form action="{{ route('prestamos.estado', $prestamo) }}" method="POST" style="margin:0;">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="estado" value="Rechazado">
+                                                <button type="submit" style="background:#c5252b; color:#fff; border:0; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">Rechazar</button>
+                                            </form>
+                                        @endif
+                                        <form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST" onsubmit="return confirm('¿Eliminar este préstamo?')" style="margin:0;">@csrf @method('DELETE')<button class="delete-loan" type="submit" title="Eliminar préstamo"><i class="fa-solid fa-trash"></i></button></form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr><td colspan="8" class="empty">No hay préstamos registrados.</td></tr>

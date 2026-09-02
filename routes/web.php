@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get(
     '/',
-    fn () => redirect()->route('login')
-);
+    fn () => view('index')
+)->name('inicio');
 
 Route::get(
     '/login',
@@ -48,14 +48,9 @@ Route::post(
 )->name('registro.store');
 
 
-/*
-|--------------------------------------------------------------------------
-| USUARIOS AUTENTICADOS
-|--------------------------------------------------------------------------
-*/
 
 Route::middleware(
-    'role:bibliotecario,usuario'
+    'role:bibliotecario,beneficiario'
 )->group(function () {
 
     Route::get(
@@ -70,8 +65,35 @@ Route::middleware(
 
     Route::get(
         '/mis-prestamos',
-        [PrestamoController::class, 'index']
+        function () {
+            return app(\App\Http\Controllers\DashboardController::class)->index(
+                request()->merge(['modulo' => 'prestamos'])
+            );
+        }
     )->name('mis-prestamos');
+
+    Route::post(
+        '/solicitar-prestamo',
+        [PrestamoController::class, 'solicitar']
+    )->name('prestamos.solicitar');
+
+    Route::get(
+        '/mis-multas',
+        function () {
+            return app(\App\Http\Controllers\DashboardController::class)->index(
+                request()->merge(['modulo' => 'multas'])
+            );
+        }
+    )->name('mis-multas');
+
+    Route::get(
+        '/mis-reportes',
+        function () {
+            return app(\App\Http\Controllers\DashboardController::class)->index(
+                request()->merge(['modulo' => 'reportes'])
+            );
+        }
+    )->name('mis-reportes');
 });
 
 

@@ -48,8 +48,19 @@ class DashboardController extends Controller
                     })
                     ->when($categoria, fn ($query) => $query->where('categoria', $categoria))
                     ->orderBy('titulo')
-                    ->paginate(4)
+                    ->paginate(12)
                     ->withQueryString();
+
+                $todosLibros = Libro::withCount([
+                    'prestamos as prestamos_activos_count' => function ($query) {
+                        $query->whereIn('estado', ['Activo', 'Pendiente', 'Vencido']);
+                    },
+                ])->get();
+
+                $datos['totalLibrosEncontrados'] = $datos['libros']->total();
+                $datos['librosDisponibles'] = $todosLibros->where('prestamos_activos_count', 0)->count();
+                $datos['librosPrestados'] = $todosLibros->where('prestamos_activos_count', '>', 0)->count();
+
                 $datos['categorias'] = Libro::whereNotNull('categoria')
                     ->where('categoria', '<>', '')
                     ->distinct()
@@ -155,7 +166,11 @@ class DashboardController extends Controller
             return view('dashboard.inicio', $datos);
         }
 
-        $prestamos = Prestamo::with(
+        $modulo = $request->input('modulo', 'inicio');
+        $buscar = trim($request->input('buscar', ''));
+        $categoria = trim($request->input('categoria', ''));
+
+        $allPrestamos = Prestamo::with(
             'libro.autor'
         )
             ->where(
@@ -165,7 +180,18 @@ class DashboardController extends Controller
             ->orderByDesc('idprestamo')
             ->get();
 
-        $multas = Multa::whereHas(
+        $prestamos = Prestamo::with(
+            'libro.autor'
+        )
+            ->where(
+                'id_usuario',
+                $usuario['id_usuario']
+            )
+            ->orderByDesc('idprestamo')
+            ->paginate(3)
+            ->withQueryString();
+
+        $multas_query = Multa::whereHas(
             'prestamo',
             function ($query) use ($usuario) {
                 $query->where(
@@ -173,13 +199,74 @@ class DashboardController extends Controller
                     $usuario['id_usuario']
                 );
             }
-        )->count();
+        );
+
+        $multas_todas = $multas_query->get();
+        $multas = $multas_todas->count();
+        $valorMultas = $multas_todas->sum('valor');
+        $multas_paginadas = $multas_query->orderByDesc('idmulta')->paginate(3)->withQueryString();
+
+        $totalPrestamos = $allPrestamos->count();
+        $activos = $allPrestamos->where('estado', 'Activo')->count();
+        $devueltos = $allPrestamos->whereIn('estado', ['Devuelto', 'Devueltos'])->count();
+        $vencidos = $allPrestamos->where('estado', 'Vencido')->count();
+        $pendientes = $allPrestamos->where('estado', 'Pendiente')->count();
+
+        $librosQuery = Libro::with('autor')
+            ->withCount([
+                'prestamos as prestamos_activos_count' => function ($query) {
+                    $query->whereIn('estado', ['Activo', 'Pendiente', 'Vencido']);
+                },
+            ])
+            ->when($buscar, function ($query) use ($buscar) {
+                $query->where(function ($q) use ($buscar) {
+                    $q->where('titulo', 'like', "%{$buscar}%")
+                        ->orWhere('categoria', 'like', "%{$buscar}%")
+                        ->orWhere('año_publicacion', 'like', "%{$buscar}%")
+                        ->orWhereHas('autor', function ($autor) use ($buscar) {
+                            $autor->where('nombre', 'like', "%{$buscar}%");
+                        });
+                });
+            })
+            ->when($categoria, fn ($q) => $q->where('categoria', $categoria))
+            ->orderBy('titulo');
+
+        $allLibros = $librosQuery->get();
+        $totalLibrosEncontrados = $allLibros->count();
+        $librosDisponibles = $allLibros->where('prestamos_activos_count', 0)->count();
+        $librosPrestados = $allLibros->where('prestamos_activos_count', '>', 0)->count();
+
+        $libros = $librosQuery->paginate(6)->withQueryString();
+
+        $categorias = Libro::whereNotNull('categoria')
+            ->where('categoria', '<>', '')
+            ->distinct()
+            ->orderBy('categoria')
+            ->pluck('categoria');
+
+        $usuarioData = Usuario::find($usuario['id_usuario']);
 
         return view(
             'dashboard.usuario',
             compact(
+                'usuarioData',
                 'prestamos',
-                'multas'
+                'totalPrestamos',
+                'multas',
+                'valorMultas',
+                'multas_paginadas',
+                'activos',
+                'devueltos',
+                'vencidos',
+                'pendientes',
+                'modulo',
+                'buscar',
+                'categoria',
+                'libros',
+                'totalLibrosEncontrados',
+                'librosDisponibles',
+                'librosPrestados',
+                'categorias'
             )
         );
     }

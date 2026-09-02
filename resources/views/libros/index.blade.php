@@ -314,7 +314,11 @@
                     <span class="book-status{{ $estaPrestado ? '' : ' available' }}">
                         {{ $estaPrestado ? 'Prestado' : 'Disponible' }}
                     </span>
-                    <div class="book-cover" aria-hidden="true"></div>
+                    @if($libro->imagen)
+                        <img src="{{ asset('storage/' . $libro->imagen) }}" alt="Portada de {{ $libro->titulo }}" class="book-cover" style="object-fit: cover;">
+                    @else
+                        <div class="book-cover" aria-hidden="true"></div>
+                    @endif
                 </div>
 
                 <div class="book-details">

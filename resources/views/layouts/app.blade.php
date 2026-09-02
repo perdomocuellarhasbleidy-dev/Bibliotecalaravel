@@ -10,10 +10,7 @@
         @yield('title', 'Biblioteca')
     </title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Fonts -->
 
     <style>
         * {
@@ -23,10 +20,14 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: "Segoe UI", Arial, sans-serif;
             background: #f0ede9;
             color: #333;
             min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6, .logo {
+            font-family: Georgia, "Times New Roman", serif;
         }
 
         nav {
