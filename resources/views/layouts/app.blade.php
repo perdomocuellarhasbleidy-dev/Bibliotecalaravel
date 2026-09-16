@@ -9,6 +9,7 @@
     <title>
         @yield('title', 'Biblioteca')
     </title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
 
     <!-- Fonts -->
 

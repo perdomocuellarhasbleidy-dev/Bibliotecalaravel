@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Humberto Montealegre Sanchez</title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -583,20 +584,33 @@
     <!-- Chat Window -->
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
-            <div class="chat-title">Asistente Biblioteca</div>
-            <div class="chat-subtitle">Biblioteca Humberto Montealegre Sanchez</div>
+            <div class="chat-title">Asistente IA Biblioteca</div>
+            <div class="chat-subtitle">Powered by Ollama · Biblioteca Humberto Montealegre</div>
             <div class="chat-close" id="closeChatBtn"><i class="fa-solid fa-xmark"></i></div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-message">
-                👋 Hola, soy el asistente virtual de la Biblioteca Humberto Montealegre Sanchez. ¿En qué puedo ayudarte?
+                👋 Hola, soy el asistente virtual de la Biblioteca Humberto Montealegre Sanchez. ¿En qué puedo ayudarte hoy?
             </div>
         </div>
-        <div class="chat-options">
-            <button class="chat-option-btn" onclick="sendChatReply('¿Cómo ingreso al sistema?', 'Para ingresar al sistema, debes hacer clic en el botón &quot;Ingresar&quot; en esta misma página o usar la opción de Login. Usa las credenciales que te ha proporcionado el administrador.')">¿Cómo ingreso al sistema?</button>
-            <button class="chat-option-btn" onclick="sendChatReply('¿Qué puedo hacer en la biblioteca?', 'A través de nuestra plataforma web puedes administrar y consultar el catálogo de libros, gestionar tus préstamos, realizar reservas y verificar fechas de devoluciones.')">¿Qué puedo hacer en la biblioteca?</button>
-            <button class="chat-option-btn" onclick="sendChatReply('¿Cómo consulto libros?', 'Una vez ingreses a tu cuenta, tendrás acceso al apartado &quot;Catálogo&quot; en donde podrás buscar todos los libros, visualizar su disponibilidad y solicitar préstamos.')">¿Cómo consulto libros?</button>
-            <button class="chat-option-btn" onclick="sendChatReply('¿Qué hago si tengo una multa?', 'Si tienes una multa pendiente por retraso en tus devoluciones, acércate físicamente a la biblioteca para regularizar el estado, o comunícate a nuestro correo de soporte.')">¿Qué hago si tengo una multa?</button>
+        <div class="chat-options" id="chatOptions">
+            <button class="chat-option-btn" onclick="sendOllamaMessage('¿Cómo ingreso al sistema?')">¿Cómo ingreso al sistema?</button>
+            <button class="chat-option-btn" onclick="sendOllamaMessage('¿Qué puedo hacer en la biblioteca?')">¿Qué puedo hacer en la biblioteca?</button>
+            <button class="chat-option-btn" onclick="sendOllamaMessage('¿Cómo consulto libros?')">¿Cómo consulto libros?</button>
+            <button class="chat-option-btn" onclick="sendOllamaMessage('¿Qué hago si tengo una multa?')">¿Qué hago si tengo una multa?</button>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #e5ddd3; background: #fff;">
+            <input
+                type="text"
+                id="chatInput"
+                placeholder="Escribe tu pregunta..."
+                style="flex: 1; height: 38px; padding: 0 12px; border: 1px solid #c9b89e; border-radius: 20px; font-size: 13px; outline: none; font-family: inherit;"
+                onkeydown="if(event.key==='Enter') enviarChat()"
+            >
+            <button
+                onclick="enviarChat()"
+                style="height: 38px; padding: 0 14px; border: none; border-radius: 20px; background: #5c2e0e; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;"
+            >Enviar</button>
         </div>
     </div>
 
@@ -605,6 +619,7 @@
         const openChatBtn = document.getElementById('openChatBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const chatBody = document.getElementById('chatBody');
+        const chatOptions = document.getElementById('chatOptions');
 
         openChatBtn.addEventListener('click', () => {
             chatWindow.classList.add('active');
@@ -616,28 +631,61 @@
             openChatBtn.style.display = 'flex';
         });
 
-        function sendChatReply(question, answer) {
-            // Append user question bubble
-            const userMsg = document.createElement('div');
-            userMsg.className = 'chat-message';
-            userMsg.style.alignSelf = 'flex-end';
-            userMsg.style.backgroundColor = 'var(--primary-color)';
-            userMsg.style.color = 'white';
-            userMsg.style.border = 'none';
-            userMsg.innerHTML = question;
-            chatBody.appendChild(userMsg);
-
-            // Scroll to bottom
+        function appendMessage(text, isUser = false) {
+            const msg = document.createElement('div');
+            msg.className = 'chat-message';
+            if (isUser) {
+                msg.style.alignSelf = 'flex-end';
+                msg.style.backgroundColor = '#5c2e0e';
+                msg.style.color = 'white';
+                msg.style.border = 'none';
+            }
+            msg.innerHTML = text;
+            chatBody.appendChild(msg);
             chatBody.scrollTop = chatBody.scrollHeight;
+            return msg;
+        }
 
-            // Simulate slight delay for assistant answer
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'chat-message';
-                botMsg.innerHTML = answer;
-                chatBody.appendChild(botMsg);
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }, 500);
+        function enviarChat() {
+            const input = document.getElementById('chatInput');
+            const texto = input.value.trim();
+            if (!texto) return;
+            input.value = '';
+            sendOllamaMessage(texto);
+        }
+
+        function sendOllamaMessage(mensaje) {
+            // Hide quick options after first interaction
+            if (chatOptions) chatOptions.style.display = 'none';
+
+            // Show user message
+            appendMessage(mensaje, true);
+
+            // Show typing indicator
+            const typing = appendMessage('⏳ Pensando...');
+
+            fetch('{{ route("chat.responder") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ mensaje: mensaje }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                typing.remove();
+                appendMessage(data.respuesta || 'Sin respuesta.');
+            })
+            .catch(() => {
+                typing.remove();
+                appendMessage('❌ No se pudo conectar con el asistente. Verifica que Ollama esté activo.');
+            });
+        }
+
+        // Legacy function for backward compat
+        function sendChatReply(question, answer) {
+            sendOllamaMessage(question);
         }
     </script>
 

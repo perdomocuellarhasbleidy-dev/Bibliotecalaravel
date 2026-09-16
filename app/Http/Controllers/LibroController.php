@@ -66,7 +66,8 @@ class LibroController extends Controller
                 )
             )
             ->orderBy('titulo')
-            ->get();
+            ->paginate(6)
+            ->appends($request->all());
 
         $categorias = Libro::whereNotNull(
             'categoria'

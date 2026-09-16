@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes</title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         * { box-sizing: border-box; }
@@ -26,7 +27,7 @@
 <body>
 <div class="app">
     <aside class="sidebar">
-        <div class="logo"><i class="fa-solid fa-book logo-icon"></i><div class="logo-text"><span>Biblioteca</span><strong>HMS</strong></div></div>
+        <div class="logo"><img src="{{ asset('images/logo-libro.png') }}" alt="Logo" class="logo-icon" style="width: 45px; height: auto; background: transparent;"><div class="logo-text"><span>Biblioteca</span><strong>HMS</strong></div></div>
         <nav class="menu">
             <a href="{{ route('dashboard') }}"><i class="fa-solid fa-house"></i><span>Inicio</span></a>
             <a href="{{ route('usuarios.index') }}"><i class="fa-solid fa-users"></i><span>Beneficiarios</span></a>

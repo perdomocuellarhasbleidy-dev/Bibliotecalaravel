@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Open Book Logo matching Image 1 -->
+  <!-- Outer dark cover frame -->
+  <path d="M 256,450 C 190,430 90,400 30,370 L 30,120 C 30,95 50,75 75,75 C 135,100 200,125 256,145 C 312,125 377,100 437,75 C 462,75 482,95 482,120 L 482,370 C 422,400 322,430 256,450 Z" fill="#000000" />
+  
+  <!-- Outer cover white cutouts -->
+  <path d="M 256,160 C 198,140 98,112 46,92 L 46,352 C 98,372 198,400 256,420 Z" fill="#ffffff" />
+  <path d="M 256,160 C 314,140 414,112 466,92 L 466,352 C 414,372 314,400 256,420 Z" fill="#ffffff" />
+
+  <!-- Middle Page Layer -->
+  <path d="M 256,432 C 195,412 92,382 44,360 L 44,110 C 44,92 58,80 76,86 C 130,106 195,130 256,150 Z" fill="#000000" />
+  <path d="M 256,432 C 317,412 420,382 468,360 L 468,110 C 468,92 454,80 436,86 C 382,106 317,130 256,150 Z" fill="#000000" />
+
+  <!-- Middle Page Inner Cutout -->
+  <path d="M 256,162 C 200,142 104,116 58,98 L 58,345 C 104,363 200,389 256,409 Z" fill="#ffffff" />
+  <path d="M 256,162 C 312,142 408,116 454,98 L 454,345 C 408,363 312,389 256,409 Z" fill="#ffffff" />
+
+  <!-- Center Pages (Standing open page leaves) -->
+  <!-- Left Center Page -->
+  <path d="M 256,420 C 205,398 110,370 70,348 L 70,100 C 70,82 85,70 102,76 C 150,94 205,118 256,138 Z" fill="#000000" />
+  <!-- Left Center Page Top Curved Standing Leaf -->
+  <path d="M 256,138 C 215,100 155,55 125,35 C 135,25 155,25 175,35 C 205,52 235,80 256,105 Z" fill="#000000" />
+
+  <!-- Right Center Page -->
+  <path d="M 256,420 C 307,398 402,370 442,348 L 442,100 C 442,82 427,70 410,76 C 362,94 307,118 256,138 Z" fill="#000000" />
+  <!-- Right Center Page Top Curved Standing Leaf -->
+  <path d="M 256,138 C 297,100 357,55 387,35 C 377,25 357,25 337,35 C 307,52 277,80 256,105 Z" fill="#000000" />
+  
+  <!-- Spine Center Fold Line -->
+  <line x1="256" y1="140" x2="256" y2="445" stroke="#ffffff" stroke-width="4" />
+</svg>

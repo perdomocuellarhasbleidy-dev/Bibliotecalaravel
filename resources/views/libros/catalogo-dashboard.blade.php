@@ -347,20 +347,30 @@
                             <div class="book-info-value">{{ $estaPrestado ? 'No disponible' : 'Disponible' }}</div>
                         </div>
                     </div>
-                    <div class="book-info-box">
-                        <div class="book-label-small">Ubicación / Consulta</div>
-                        <div class="book-info-value">Sin información registrada</div>
-                    </div>
+
                     <div class="book-actions">
                         <button type="button" class="book-edit edit-book-trigger" data-edit-modal="edit-book-modal-{{ $libro->idlibro }}">Editar</button>
-                        <form action="{{ route('libros.destroy', $libro) }}" method="POST" onsubmit="return confirm('¿Eliminar este libro?')" style="margin:0;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="book-delete">Eliminar</button>
-                        </form>
+                        <button type="button" class="book-delete open-book-delete" data-delete-book="delete-book-{{ $libro->idlibro }}">Eliminar</button>
                     </div>
                 </div>
             </article>
+
+            <!-- Modal de Eliminación -->
+            <div class="book-delete-modal" id="delete-book-{{ $libro->idlibro }}" role="dialog" aria-modal="true" aria-labelledby="delete-book-title-{{ $libro->idlibro }}">
+                <div class="book-delete-box">
+                    <div class="book-warning">!</div>
+                    <h2 id="delete-book-title-{{ $libro->idlibro }}">¿Eliminar libro?</h2>
+                    <p>Esta acción eliminará el libro del sistema.</p>
+                    <div class="book-delete-actions">
+                        <form action="{{ route('libros.destroy', $libro) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="confirm-book-delete">Sí, eliminar</button>
+                            <button type="button" class="cancel-book-delete">Cancelar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <!-- Edit Modal -->
             <div class="book-modal" id="edit-book-modal-{{ $libro->idlibro }}" role="dialog" aria-modal="true" aria-labelledby="edit-book-title-{{ $libro->idlibro }}">
@@ -528,6 +538,22 @@
     });
 
     document.querySelectorAll('.book-modal').forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.classList.remove('is-open');
+        });
+    });
+
+    document.querySelectorAll('.open-book-delete').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.getElementById(button.dataset.deleteBook).classList.add('is-open');
+        });
+    });
+
+    document.querySelectorAll('.cancel-book-delete').forEach((button) => {
+        button.addEventListener('click', () => button.closest('.book-delete-modal').classList.remove('is-open'));
+    });
+
+    document.querySelectorAll('.book-delete-modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
             if (event.target === modal) modal.classList.remove('is-open');
         });

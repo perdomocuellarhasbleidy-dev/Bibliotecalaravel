@@ -160,7 +160,66 @@ class DashboardController extends Controller
             }
 
             if ($request->input('modulo') === 'reportes') {
-                return redirect()->route('reportes.index', $request->query());
+                $fechaInicio = $request->input('fecha_inicio');
+                $fechaFin = $request->input('fecha_fin');
+                $tipo = $request->input('tipo', 'resumen');
+                $imprimir = $request->boolean('imprimir');
+
+                $prestamos = Prestamo::query()
+                    ->when($fechaInicio, fn ($query) => $query->whereDate('fecha_prestamo', '>=', $fechaInicio))
+                    ->when($fechaFin, fn ($query) => $query->whereDate('fecha_prestamo', '<=', $fechaFin));
+
+                $devoluciones = Devolucion::query()
+                    ->when($fechaInicio, fn ($query) => $query->whereDate('fecha_devolucion', '>=', $fechaInicio))
+                    ->when($fechaFin, fn ($query) => $query->whereDate('fecha_devolucion', '<=', $fechaFin));
+
+                $multas = Multa::query()
+                    ->when($fechaInicio, fn ($query) => $query->whereDate('fecha', '>=', $fechaInicio))
+                    ->when($fechaFin, fn ($query) => $query->whereDate('fecha', '<=', $fechaFin));
+
+                $datos['modulo'] = 'reportes';
+                $datos['fechaInicio'] = $fechaInicio;
+                $datos['fechaFin'] = $fechaFin;
+                $datos['tipo'] = $tipo;
+                $datos['imprimir'] = $imprimir;
+
+                $datos['totalBeneficiarios'] = Usuario::where('id_rol', 2)->count();
+                $datos['totalLibros'] = Libro::count();
+                $datos['totalPrestamos'] = (clone $prestamos)->count();
+                $datos['totalDevoluciones'] = (clone $devoluciones)->count();
+                $datos['totalMultas'] = (clone $multas)->count();
+                $datos['valorMultas'] = (clone $multas)->sum('valor');
+
+                $datos['prestamosReporte'] = (clone $prestamos)
+                    ->with(['libro', 'usuario'])
+                    ->orderByDesc('idprestamo')
+                    ->paginate(10)
+                    ->withQueryString();
+
+                $datos['devolucionesReporte'] = (clone $devoluciones)
+                    ->with(['prestamo', 'libro', 'usuario'])
+                    ->orderByDesc('iddevolucion')
+                    ->paginate(5, ['*'], 'devoluciones_page')
+                    ->withQueryString();
+
+                $multasConsulta = (clone $multas)
+                    ->with('prestamo.libro', 'prestamo.usuario')
+                    ->orderByDesc('idmulta');
+
+                $datos['multasReporte'] = $imprimir
+                    ? $multasConsulta->get()
+                    : $multasConsulta->paginate(5, ['*'], 'multas_page')->withQueryString();
+
+                $datos['librosReporte'] = Libro::with('autor')
+                    ->orderBy('titulo')
+                    ->paginate(10, ['*'], 'libros_page')
+                    ->withQueryString();
+
+                $beneficiariosConsulta = Usuario::where('id_rol', 2)->orderBy('nombre');
+
+                $datos['beneficiariosReporte'] = $imprimir
+                    ? $beneficiariosConsulta->get()
+                    : $beneficiariosConsulta->paginate(10, ['*'], 'beneficiarios_page')->withQueryString();
             }
 
             return view('dashboard.inicio', $datos);

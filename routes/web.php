@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevolucionController;
 use App\Http\Controllers\LibroController;
@@ -14,6 +15,9 @@ Route::get(
     '/',
     fn () => view('index')
 )->name('inicio');
+
+Route::post('/chat', [ChatController::class, 'responder'])->name('chat.responder');
+
 
 Route::get(
     '/login',

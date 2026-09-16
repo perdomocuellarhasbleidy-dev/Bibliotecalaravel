@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Gestión de Beneficiarios - Biblioteca HMS</title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -620,7 +621,7 @@
     <aside class="sidebar">
 
         <div class="logo">
-            <i class="fa-solid fa-book logo-icon"></i>
+            <img src="{{ asset('images/logo-libro.png') }}" alt="Logo" class="logo-icon" style="width: 45px; height: auto; background: transparent;">
             <div class="logo-text">
                 <span>Biblioteca</span>
                 <strong>HMS</strong>

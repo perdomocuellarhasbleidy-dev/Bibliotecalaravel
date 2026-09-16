@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Biblioteca HMS</title>
-
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -461,6 +461,79 @@
                 display: none;
             }
         }
+        .book-delete-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, .48);
+        }
+
+        .book-delete-modal.is-open {
+            display: flex;
+        }
+
+        .book-delete-box {
+            width: min(520px, 100%);
+            padding: 40px 32px 27px;
+            border-radius: 5px;
+            background: #f5efe6;
+            text-align: center;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, .28);
+        }
+
+        .book-warning {
+            width: 88px;
+            height: 88px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 34px;
+            border: 4px solid #ffc080;
+            border-radius: 50%;
+            color: #ffbd7c;
+            font-size: 46px;
+        }
+
+        .book-delete-box h2 {
+            margin: 0 0 20px;
+            color: #3e2618;
+            font-size: 29px;
+        }
+
+        .book-delete-box p {
+            margin: 0 0 30px;
+            color: #654b39;
+            font-size: 17px;
+        }
+
+        .book-delete-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .book-delete-actions button {
+            height: 46px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 4px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .confirm-book-delete {
+            background: #75461f;
+        }
+
+        .cancel-book-delete {
+            background: #aeb8c7;
+        }
 
     </style>
 
@@ -475,9 +548,7 @@
 
 
         <div class="logo">
-
-            <i class="fa-solid fa-book logo-icon"></i>
-
+            <img src="{{ asset('images/logo-libro.png') }}" alt="Logo" class="logo-icon" style="width: 45px; height: auto; background: transparent;">
             <div class="logo-text">
 
                 <span>
@@ -497,7 +568,7 @@
 
         <nav class="menu">
 
-            <a href="{{ route('dashboard') }}" class="active">
+            <a href="{{ route('dashboard') }}" class="{{ !isset($modulo) || $modulo === 'inicio' ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
                 <span>Inicio</span>
             </a>
@@ -507,27 +578,27 @@
                 <span>Beneficiarios</span>
             </a>
 
-            <a href="{{ route('dashboard', ['modulo' => 'libros']) }}">
+            <a href="{{ route('dashboard', ['modulo' => 'libros']) }}" class="{{ isset($modulo) && $modulo === 'libros' ? 'active' : '' }}">
                 <i class="fa-solid fa-book"></i>
                 <span>Libros</span>
             </a>
 
-            <a href="{{ route('dashboard', ['modulo' => 'prestamos']) }}">
+            <a href="{{ route('dashboard', ['modulo' => 'prestamos']) }}" class="{{ isset($modulo) && $modulo === 'prestamos' ? 'active' : '' }}">
                 <i class="fa-solid fa-hand-holding-heart"></i>
                 <span>Préstamos</span>
             </a>
 
-            <a href="{{ route('dashboard', ['modulo' => 'devoluciones']) }}">
+            <a href="{{ route('dashboard', ['modulo' => 'devoluciones']) }}" class="{{ isset($modulo) && $modulo === 'devoluciones' ? 'active' : '' }}">
                 <i class="fa-solid fa-rotate-left"></i>
                 <span>Devolución</span>
             </a>
 
-            <a href="{{ route('dashboard', ['modulo' => 'multas']) }}">
+            <a href="{{ route('dashboard', ['modulo' => 'multas']) }}" class="{{ isset($modulo) && $modulo === 'multas' ? 'active' : '' }}">
                 <i class="fa-solid fa-file-invoice-dollar"></i>
                 <span>Multa</span>
             </a>
 
-            <a href="{{ route('reportes.index') }}">
+            <a href="{{ route('dashboard', ['modulo' => 'reportes']) }}" class="{{ isset($modulo) && $modulo === 'reportes' ? 'active' : '' }}">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Reporte</span>
             </a>
@@ -549,21 +620,14 @@
 
         <header class="topbar">
 
-            <h1>{{ isset($modulo) ? ($modulo === 'libros' ? 'Libros' : ($modulo === 'prestamos' ? 'Gestión de Préstamos' : ($modulo === 'devoluciones' ? 'Gestión de Devoluciones' : ($modulo === 'multas' ? 'Gestión de Multas' : 'Inicio')))) : 'Inicio' }}</h1>
+            <h1>{{ isset($modulo) ? ($modulo === 'libros' ? 'Libros' : ($modulo === 'prestamos' ? 'Gestión de Préstamos' : ($modulo === 'devoluciones' ? 'Gestión de Devoluciones' : ($modulo === 'multas' ? 'Gestión de Multas' : ($modulo === 'reportes' ? 'Reportes' : 'Inicio'))))) : 'Inicio' }}</h1>
 
 
             <div class="user">
 
                 <div class="user-info">
-
-                    <strong>
-                        Bibliotecario
-                    </strong>
-
-                    <span>
-                        Michi
-                    </span>
-
+                    <strong>Bibliotecario</strong>
+                    <span>{{ session('usuario.nombre', 'Michi') }}</span>
                 </div>
 
 
@@ -588,6 +652,8 @@
                 @include('devoluciones.dashboard')
             @elseif(isset($modulo) && $modulo === 'multas')
                 @include('multas.dashboard')
+            @elseif(isset($modulo) && $modulo === 'reportes')
+                @include('reportes.dashboard-content')
             @else
             <div class="welcome">
 

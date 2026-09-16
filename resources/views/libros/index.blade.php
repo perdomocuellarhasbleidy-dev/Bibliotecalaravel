@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Libros</title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
     * { box-sizing: border-box; }
@@ -244,7 +245,7 @@
 <div class="app">
     <aside class="sidebar">
         <div class="logo">
-            <i class="fa-solid fa-book logo-icon"></i>
+            <img src="{{ asset('images/logo-libro.png') }}" alt="Logo" class="logo-icon" style="width: 45px; height: auto; background: transparent;">
             <div class="logo-text"><span>Biblioteca</span><strong>HMS</strong></div>
         </div>
         <nav class="menu">
@@ -283,6 +284,129 @@
         .books-hero h1 { font-size: 25px; }
         .book-grid { grid-template-columns: 1fr; }
     }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    .pagination-wrapper nav {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: #f5f2ef;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .pagination-wrapper nav a,
+    .pagination-wrapper nav span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 42px;
+        padding: 0 14px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 14px;
+        color: #555;
+        text-decoration: none;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .pagination-wrapper nav a:hover {
+        background: #ebe6e0;
+    }
+
+    .pagination-wrapper nav .active-page {
+        background: white;
+        color: #75461f;
+        font-weight: bold;
+        border: 2px solid #75461f;
+        border-radius: 6px;
+    }
+
+    .pagination-wrapper nav .disabled {
+        color: #bbb;
+        cursor: default;
+    }
+
+    .book-delete-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, .48);
+    }
+
+    .book-delete-modal.is-open {
+        display: flex;
+    }
+
+    .book-delete-box {
+        width: min(520px, 100%);
+        padding: 40px 32px 27px;
+        border-radius: 5px;
+        background: #f5efe6;
+        text-align: center;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, .28);
+    }
+
+    .book-warning {
+        width: 88px;
+        height: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 34px;
+        border: 4px solid #ffc080;
+        border-radius: 50%;
+        color: #ffbd7c;
+        font-size: 46px;
+    }
+
+    .book-delete-box h2 {
+        margin: 0 0 20px;
+        color: #3e2618;
+        font-size: 29px;
+    }
+
+    .book-delete-box p {
+        margin: 0 0 30px;
+        color: #654b39;
+        font-size: 17px;
+    }
+
+    .book-delete-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .book-delete-actions button {
+        height: 46px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 4px;
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .confirm-book-delete {
+        background: #75461f;
+    }
+
+    .cancel-book-delete {
+        background: #aeb8c7;
+    }
 </style>
 
 <div class="books-page">
@@ -302,7 +426,7 @@
         </select>
 
         <button type="submit" class="book-search-button">Buscar</button>
-        <div class="book-count">Se encontraron {{ $libros->count() }} libro(s) en el catálogo.</div>
+        <div class="book-count">Se encontraron {{ $libros->total() }} libro(s) en el catálogo.</div>
     </form>
 
     <div class="book-grid">
@@ -336,20 +460,95 @@
                         </button>
                     </div>
 
-                    <form action="{{ route('libros.destroy', $libro) }}" method="POST" onsubmit="return confirm('¿Eliminar este libro?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" style="margin-top: 10px; border: 0; background: transparent; color: #b33; cursor: pointer;">Eliminar</button>
-                    </form>
+                    <button type="button" class="open-book-delete" data-delete-book="delete-book-{{ $libro->idlibro }}" style="margin-top: 10px; border: 0; background: transparent; color: #b33; cursor: pointer;">Eliminar</button>
                 </div>
             </article>
+
+            <!-- Modal de Eliminación -->
+            <div class="book-delete-modal" id="delete-book-{{ $libro->idlibro }}" role="dialog" aria-modal="true" aria-labelledby="delete-book-title-{{ $libro->idlibro }}">
+                <div class="book-delete-box">
+                    <div class="book-warning">!</div>
+                    <h2 id="delete-book-title-{{ $libro->idlibro }}">¿Eliminar libro?</h2>
+                    <p>Esta acción eliminará el libro del sistema.</p>
+                    <div class="book-delete-actions">
+                        <form action="{{ route('libros.destroy', $libro) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="confirm-book-delete">Sí, eliminar</button>
+                            <button type="button" class="cancel-book-delete">Cancelar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         @empty
             <div class="book-empty">No hay libros registrados.</div>
         @endforelse
     </div>
+
+    @if($libros->hasPages())
+    <div class="pagination-wrapper">
+        <nav>
+            {{-- Primera página --}}
+            @if($libros->onFirstPage())
+                <span class="disabled">&laquo;</span>
+            @else
+                <a href="{{ $libros->url(1) }}">&laquo;</a>
+            @endif
+
+            {{-- Anterior --}}
+            @if($libros->onFirstPage())
+                <span class="disabled">&lsaquo; Anterior</span>
+            @else
+                <a href="{{ $libros->previousPageUrl() }}">&lsaquo; Anterior</a>
+            @endif
+
+            {{-- Números de página --}}
+            @for($i = 1; $i <= $libros->lastPage(); $i++)
+                @if($i == $libros->currentPage())
+                    <span class="active-page">{{ $i }}</span>
+                @else
+                    <a href="{{ $libros->url($i) }}">{{ $i }}</a>
+                @endif
+            @endfor
+
+            {{-- Siguiente --}}
+            @if($libros->hasMorePages())
+                <a href="{{ $libros->nextPageUrl() }}">Siguiente &rsaquo;</a>
+            @else
+                <span class="disabled">Siguiente &rsaquo;</span>
+            @endif
+
+            {{-- Última página --}}
+            @if($libros->hasMorePages())
+                <a href="{{ $libros->url($libros->lastPage()) }}">&raquo;</a>
+            @else
+                <span class="disabled">&raquo;</span>
+            @endif
+        </nav>
+    </div>
+    @endif
 </div>
 </section>
 </main>
 </div>
+
+<script>
+    document.querySelectorAll('.open-book-delete').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.getElementById(button.dataset.deleteBook).classList.add('is-open');
+        });
+    });
+
+    document.querySelectorAll('.cancel-book-delete').forEach((button) => {
+        button.addEventListener('click', () => button.closest('.book-delete-modal').classList.remove('is-open'));
+    });
+
+    document.querySelectorAll('.book-delete-modal').forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.classList.remove('is-open');
+        });
+    });
+</script>
+
 </body>
 </html>

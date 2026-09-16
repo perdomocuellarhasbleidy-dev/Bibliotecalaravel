@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ ($modulo ?? 'inicio') === 'libros' ? 'Catálogo de Libros' : 'Panel Beneficiario' }} - Biblioteca HMS</title>
+    <link rel="icon" href="{{ asset('images/logo-libro.png') }}" type="image/png">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
@@ -974,7 +975,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <i class="fa-solid fa-book sidebar-logo-icon"></i>
+            <img src="{{ asset('images/logo-libro.png') }}" alt="Logo" class="sidebar-logo-icon" style="width: 45px; height: auto; background: transparent;">
             <div class="sidebar-logo-text">
                 <span class="sidebar-logo-title">Biblioteca</span>
                 <strong class="sidebar-logo-subtitle">HMS</strong>
@@ -1303,6 +1304,7 @@
                 </div>
 
                 <!-- Table Card Section -->
+<button type="button" class="print-button" onclick="window.location.href='{{ route('reportes.index', ['tipo' => 'multas', 'imprimir' => 1]) }}'">Imprimir</button>
                 <div class="my-loans-table-card" style="background: #ffffff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); overflow: hidden;">
                     <div class="my-loans-table-header" style="background: #5c381e; color: #fff; padding: 18px 24px; font-size: 18px; font-weight: 700;">
                         Detalle de mis multas
@@ -1412,7 +1414,7 @@
                             <label style="display: block; font-size: 13px; color: #684321; font-weight: 700; margin-bottom: 8px;">Fecha fin</label>
                             <input type="date" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid #c9c5c0; border-radius: 8px; background: #ffffff; font-size: 14px; color: #2e2118; outline: none;">
                         </div>
-                        <button type="button" style="width: 220px; height: 44px; border: none; border-radius: 8px; background: #3e2618; color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer;">Imprimir</button>
+                        <button type="button" onclick="window.print()" style="width: 220px; height: 44px; border: none; border-radius: 8px; background: #3e2618; color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer;">🖨 Imprimir</button>
                     </form>
                 </div>
 
@@ -1764,6 +1766,59 @@
                 closeLoanModal();
             }
         });
+        function switchReportTab(tab) {
+            const tabs = ['resumen', 'prestamos', 'multas'];
+            tabs.forEach(function(t) {
+                const btn = document.getElementById('btn-' + t);
+                if (btn) {
+                    if (t === tab) {
+                        btn.style.background = '#3e2618';
+                        btn.style.color = '#ffffff';
+                        btn.style.border = 'none';
+                    } else {
+                        btn.style.background = '#ffffff';
+                        btn.style.color = '#5c381e';
+                        btn.style.border = '1px solid #d4cbbd';
+                    }
+                }
+            });
+            const tipoText = document.getElementById('tipo-reporte-text');
+            if (tipoText) {
+                const labels = { resumen: 'Resumen', prestamos: 'Préstamos', multas: 'Multas' };
+                tipoText.innerHTML = '<strong>Tipo de reporte:</strong> ' + (labels[tab] || tab);
+            }
+            const sectionStats = document.getElementById('section-stats');
+            const sectionPrestamos = document.getElementById('section-prestamos');
+            const sectionMultas = document.getElementById('section-multas');
+            if (tab === 'resumen') {
+                if (sectionStats) sectionStats.style.display = '';
+                if (sectionPrestamos) sectionPrestamos.style.display = '';
+                if (sectionMultas) sectionMultas.style.display = '';
+            } else if (tab === 'prestamos') {
+                if (sectionStats) sectionStats.style.display = 'none';
+                if (sectionPrestamos) sectionPrestamos.style.display = '';
+                if (sectionMultas) sectionMultas.style.display = 'none';
+            } else if (tab === 'multas') {
+                if (sectionStats) sectionStats.style.display = 'none';
+                if (sectionPrestamos) sectionPrestamos.style.display = 'none';
+                if (sectionMultas) sectionMultas.style.display = '';
+            }
+        }
     </script>
+    <style>
+        @media print {
+            .sidebar, .topbar, form, button, .my-loans-notice-card {
+                display: none !important;
+            }
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+            body {
+                background: #fff;
+            }
+        }
+    </style>
 </body>
 </html>
