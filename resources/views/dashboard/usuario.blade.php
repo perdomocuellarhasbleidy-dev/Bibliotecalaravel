@@ -968,6 +968,21 @@
             .library-features { grid-template-columns: 1fr; }
             .request-modal-row { grid-template-columns: 1fr; gap: 6px; }
         }
+        @media print { 
+            body * { visibility: hidden; } 
+            .active-print-area, .active-print-area * { visibility: visible; } 
+            .active-print-area { position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 20px; box-shadow: none; border: none; background: #fff; } 
+            .fine-modal-actions { display: none !important; } 
+            .no-print { display: none !important; }
+            .print-report-area, .print-report-area * { visibility: visible; }
+            .print-report-area { position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 20px; box-shadow: none; border: none; background: #fff; }
+            .print-report-area .stat-card { box-shadow: none; border: 1px solid #ddd; }
+            .print-report-area table { page-break-inside: auto; }
+            .print-report-area tr { page-break-inside: avoid; }
+        }
+        .fine-modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; background: rgba(0,0,0,.48); overflow-y: auto; }
+        .fine-modal.is-open { display: flex; }
+        .fine-modal-box { width: min(850px,100%); background: #fff; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -1347,7 +1362,6 @@
                 </div>
 
                 <!-- Table Card Section -->
-<button type="button" class="print-button" onclick="window.location.href='{{ route('reportes.index', ['tipo' => 'multas', 'imprimir' => 1]) }}'">Imprimir</button>
                 <div class="my-loans-table-card" style="background: #ffffff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); overflow: hidden;">
                     <div class="my-loans-table-header" style="background: #5c381e; color: #fff; padding: 18px 24px; font-size: 18px; font-weight: 700;">
                         Detalle de mis multas
@@ -1363,6 +1377,7 @@
                                 <th style="padding: 16px 24px; text-align: left; font-size: 13px; color: #2e2118; font-weight: 700;">Fecha multa</th>
                                 <th style="padding: 16px 24px; text-align: left; font-size: 13px; color: #2e2118; font-weight: 700;">Valor</th>
                                 <th style="padding: 16px 24px; text-align: left; font-size: 13px; color: #2e2118; font-weight: 700;">Estado préstamo</th>
+                                <th style="padding: 16px 24px; text-align: left; font-size: 13px; color: #2e2118; font-weight: 700;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1387,6 +1402,11 @@
                                             <span class="my-loan-badge badge-rejected" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; background: #ffe0e2; color: #c5252b;">{{ $multa->prestamo->estado }}</span>
                                         @endif
                                     </td>
+                                    <td style="padding: 16px 24px; font-size: 14px;">
+                                        <button type="button" class="open-print-fine" data-print-fine="print-fine-{{ $multa->idmulta }}" style="background: none; border: none; color: #5c381e; cursor: pointer; font-size: 16px; padding: 5px;" title="Imprimir Factura">
+                                            <i class="fa-solid fa-print"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -1398,6 +1418,99 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Print Fine Modals -->
+                @foreach($multas_paginadas as $multa)
+                    <div class="fine-modal print-fine-modal" id="print-fine-{{ $multa->idmulta }}">
+                        <div class="fine-modal-box" style="width: min(850px, 100%); background: #fff; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                            <div class="invoice-content" style="padding: 50px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eaeaea; padding-bottom: 30px; margin-bottom: 40px;">
+                                    <div>
+                                        <h1 style="margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 36px; font-weight: 800; color: #3e2618; text-transform: uppercase; letter-spacing: 2px;">FACTURA</h1>
+                                        <p style="margin: 5px 0 0; color: #888; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px;">Original para el Cliente</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <h2 style="margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 22px; color: #75461f; font-weight: bold;">Biblioteca Humberto Montealegre Sánchez</h2>
+                                        <p style="margin: 5px 0 0; color: #555; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.5;">
+                                            Comprobante de Multa<br>
+                                            Sistema de Préstamos
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                    <div style="width: 45%;">
+                                        <h3 style="margin: 0 0 15px; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Facturar a:</h3>
+                                        <h4 style="margin: 0 0 5px; font-size: 18px; color: #333; font-weight: bold;">{{ $multa->prestamo->usuario->nombre ?? 'N/A' }}</h4>
+                                        <p style="margin: 0 0 5px; color: #555; font-size: 14px; line-height: 1.5;">
+                                            Documento: {{ $multa->prestamo->usuario->documento ?? 'N/A' }}<br>
+                                            ID Préstamo: #{{ $multa->idprestamo }}<br>
+                                        </p>
+                                    </div>
+                                    <div style="width: 45%;">
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eaeaea; padding-bottom: 10px; margin-bottom: 10px;">
+                                            <span style="color: #555; font-size: 14px; font-weight: bold;">Nº de Factura:</span>
+                                            <span style="color: #333; font-size: 14px;">INV-{{ str_pad($multa->idmulta, 6, '0', STR_PAD_LEFT) }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eaeaea; padding-bottom: 10px; margin-bottom: 10px;">
+                                            <span style="color: #555; font-size: 14px; font-weight: bold;">Fecha de Emisión:</span>
+                                            <span style="color: #333; font-size: 14px;">{{ optional($multa->fecha)->format('d M, Y') ?? now()->format('d M, Y') }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eaeaea; padding-bottom: 10px;">
+                                            <span style="color: #555; font-size: 14px; font-weight: bold;">Monto a Pagar:</span>
+                                            <span style="color: #75461f; font-size: 16px; font-weight: bold;">${{ number_format((float) $multa->valor, 2, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                    <thead>
+                                        <tr>
+                                            <th style="padding: 15px; text-align: left; background-color: #f8f9fa; color: #333; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 2px solid #333; border-bottom: 2px solid #eaeaea;">Descripción</th>
+                                            <th style="padding: 15px; text-align: center; background-color: #f8f9fa; color: #333; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 2px solid #333; border-bottom: 2px solid #eaeaea; width: 15%;">Cant.</th>
+                                            <th style="padding: 15px; text-align: right; background-color: #f8f9fa; color: #333; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-top: 2px solid #333; border-bottom: 2px solid #eaeaea; width: 25%;">Importe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 20px 15px; border-bottom: 1px solid #eaeaea; color: #555; font-size: 15px;">
+                                                <strong style="color: #333; display: block; margin-bottom: 5px;">{{ $multa->motivo }}</strong>
+                                                <span style="font-size: 13px; color: #888;">Libro: {{ $multa->prestamo->libro->titulo ?? 'N/A' }}</span>
+                                                @if($multa->dias_retraso)
+                                                <br><span style="font-size: 13px; color: #888;">Días de retraso: {{ $multa->dias_retraso }}</span>
+                                                @endif
+                                            </td>
+                                            <td style="padding: 20px 15px; text-align: center; border-bottom: 1px solid #eaeaea; color: #555; font-size: 15px;">1</td>
+                                            <td style="padding: 20px 15px; text-align: right; border-bottom: 1px solid #eaeaea; color: #555; font-size: 15px;">${{ number_format((float) $multa->valor, 2, ',', '.') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div style="display: flex; justify-content: flex-end; margin-bottom: 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                    <div style="width: 40%;">
+                                        <div style="display: flex; justify-content: space-between; padding: 15px; margin-top: 10px; background-color: #f4ece4; border-radius: 6px; color: #75461f; font-size: 18px; font-weight: bold;">
+                                            <span>Total a Pagar</span>
+                                            <span>${{ number_format((float) $multa->valor, 2, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="border-top: 1px solid #eaeaea; padding-top: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                    <h3 style="margin: 0 0 5px; font-size: 14px; color: #333;">Términos y Condiciones</h3>
+                                    <p style="margin: 0; color: #777; font-size: 12px; line-height: 1.5;">El pago de esta multa es obligatorio para habilitar nuevamente el servicio de préstamos. Por favor, presente este documento en el momento del pago. Gracias por utilizar la Biblioteca Humberto Montealegre Sánchez.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="fine-modal-actions" style="background: #fcfcfc; padding: 20px 50px; border-top: 1px solid #eaeaea; display: flex; justify-content: flex-end; gap: 15px;">
+                                <button type="button" onclick="this.closest('.fine-modal').classList.remove('is-open')" style="height: 42px; padding: 0 24px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: #333; font-weight: 600; cursor: pointer;">Cerrar</button>
+                                <button type="button" onclick="window.print()" style="height: 42px; padding: 0 24px; border: none; border-radius: 6px; background: #75461f; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-print"></i> Imprimir Factura
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
 
                 <!-- Pagination for Multas -->
                 @if($multas_paginadas->lastPage() > 1)
@@ -1457,9 +1570,12 @@
                             <label style="display: block; font-size: 13px; color: #684321; font-weight: 700; margin-bottom: 8px;">Fecha fin</label>
                             <input type="date" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid #c9c5c0; border-radius: 8px; background: #ffffff; font-size: 14px; color: #2e2118; outline: none;">
                         </div>
-                        <button type="button" onclick="window.print()" style="width: 220px; height: 44px; border: none; border-radius: 8px; background: #3e2618; color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer;">🖨 Imprimir</button>
+                        <button type="button" onclick="printReportes()" style="width: 220px; height: 44px; border: none; border-radius: 8px; background: #3e2618; color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fa-solid fa-print"></i> Imprimir</button>
                     </form>
                 </div>
+
+                <!-- Printable Reportes Area -->
+                <div id="reportes-print-area">
 
                 <!-- Report Card -->
                 <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); border: 1px solid #e2e4e7; margin-bottom: 30px; overflow: hidden;">
@@ -1609,6 +1725,8 @@
                     </table>
                 </div>
 
+                </div> <!-- end reportes-print-area -->
+
                 <!-- Bottom Notice Banner Reportes -->
                 <div class="my-loans-notice-card" style="margin-bottom: 0;">
                     <div>
@@ -1650,6 +1768,13 @@
                             document.getElementById('section-multas').style.display = 'block';
                             document.getElementById('tipo-reporte-text').innerHTML = '<strong>Tipo de reporte:</strong> Multas';
                         }
+                    }
+
+                    function printReportes() {
+                        const area = document.getElementById('reportes-print-area');
+                        area.classList.add('print-report-area');
+                        window.print();
+                        setTimeout(() => area.classList.remove('print-report-area'), 500);
                     }
                 </script>
 
@@ -1899,5 +2024,15 @@
         }
     </style>
     @include('partials.alerts')
+    <script>
+        document.querySelectorAll('.open-print-fine').forEach((button) => {
+            button.addEventListener('click', () => {
+                const modal = document.getElementById(button.dataset.printFine);
+                document.querySelectorAll('.print-fine-modal .fine-modal-box').forEach(box => box.classList.remove('active-print-area'));
+                modal.querySelector('.fine-modal-box').classList.add('active-print-area');
+                modal.classList.add('is-open');
+            });
+        });
+    </script>
 </body>
 </html>
