@@ -1035,18 +1035,6 @@
                     </div>
                 </div>
 
-                @if(session('success'))
-                    <div style="background: #1ba94c; color: #ffffff; padding: 16px 24px; border-radius: 14px; font-size: 15px; font-weight: 700; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(27, 169, 76, 0.2);">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div style="background: #e52d2d; color: #ffffff; padding: 16px 24px; border-radius: 14px; font-size: 15px; font-weight: 700; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(229, 45, 45, 0.2);">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
                 <!-- Catalog Stat Cards -->
                 <div class="stats-grid stats-grid-3">
                     <div class="stat-card">
@@ -1215,6 +1203,7 @@
                                 <th>Año</th>
                                 <th>Fecha préstamo</th>
                                 <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1238,6 +1227,11 @@
                                             <span class="my-loan-badge badge-rejected">{{ $prestamo->estado }}</span>
                                         @endif
                                     </td>
+                                    <td>
+                                        <button type="button" onclick="document.getElementById('view-book-{{ $prestamo->idprestamo }}').classList.add('is-open')" style="background: none; border: none; color: #5c381e; cursor: pointer; font-size: 16px; padding: 5px;" title="Ver detalles del libro">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -1249,6 +1243,55 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Book View Modals -->
+                @foreach($prestamos as $prestamo)
+                    @if($prestamo->libro)
+                    <div class="request-modal-overlay" id="view-book-{{ $prestamo->idprestamo }}" style="z-index: 1000;">
+                        <div class="request-modal-box" style="width: min(600px, 100%);">
+                            <div class="request-modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #5c381e; padding: 25px 35px 20px;">
+                                <h2 style="margin: 0; color: #3e2618; font-family: var(--font-heading); font-size: 26px;">Detalles del Libro</h2>
+                                <button type="button" onclick="document.getElementById('view-book-{{ $prestamo->idprestamo }}').classList.remove('is-open')" style="background: none; border: none; font-size: 24px; color: #333; cursor: pointer;">&times;</button>
+                            </div>
+                            <div class="request-modal-body" style="padding: 35px;">
+                                <div style="display: flex; gap: 25px; align-items: flex-start;">
+                                    @if($prestamo->libro->imagen)
+                                        <img src="{{ asset('storage/' . $prestamo->libro->imagen) }}" alt="Portada de {{ $prestamo->libro->titulo }}" style="width: 130px; height: 180px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                                    @else
+                                        <div style="width: 130px; height: 180px; background: #e5e2dd; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #a39c93;">
+                                            <i class="fa-solid fa-book" style="font-size: 40px;"></i>
+                                        </div>
+                                    @endif
+                                    
+                                    <div style="flex: 1;">
+                                        <h3 style="margin: 0 0 10px; font-size: 22px; color: #2e2118; font-family: var(--font-heading);">{{ $prestamo->libro->titulo }}</h3>
+                                        <p style="margin: 0 0 15px; color: #75461f; font-weight: bold; font-size: 15px;">{{ $prestamo->libro->autor->nombre ?? 'Sin autor' }}</p>
+                                        
+                                        <div style="background: #f8f5f1; border-radius: 8px; padding: 15px; border: 1px solid #e5e2dd; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                                            <div>
+                                                <span style="display: block; font-size: 12px; color: #8c725c; font-weight: bold; text-transform: uppercase;">Categoría</span>
+                                                <span style="color: #2e2118; font-weight: 500;">{{ $prestamo->libro->categoria ?? 'General' }}</span>
+                                            </div>
+                                            <div>
+                                                <span style="display: block; font-size: 12px; color: #8c725c; font-weight: bold; text-transform: uppercase;">Año</span>
+                                                <span style="color: #2e2118; font-weight: 500;">{{ $prestamo->libro->año_publicacion ?? 'N/A' }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <span style="display: block; font-size: 12px; color: #8c725c; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">Estado del Préstamo</span>
+                                            <span style="color: #2e2118; font-weight: 500;">
+                                                Solicitado el {{ optional($prestamo->fecha_prestamo)->format('d/m/Y') ?? 'N/A' }} 
+                                                (Estado: {{ $prestamo->estado }})
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                @endforeach
 
                 <!-- Pagination -->
                 @if($prestamos->lastPage() > 1)
@@ -1709,7 +1752,7 @@
                 </h2>
             </header>
             <div class="request-modal-body">
-                <form action="{{ route('prestamos.solicitar') }}" method="POST" id="request-loan-form">
+                <form action="{{ route('prestamos.solicitar') }}" method="POST" id="request-loan-form" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="idlibro" id="modal-hidden-idlibro">
                     <div class="request-modal-form-grid">
@@ -1728,6 +1771,23 @@
                             <select disabled style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid #c9c5c0; border-radius: 4px; background: #ffffff; font-size: 15px; font-family: var(--font-body); color: #2e2118;">
                                 <option>{{ session('usuario.nombre', 'Ana Torres') }} - {{ session('usuario.documento', '10234567') }}</option>
                             </select>
+                        </div>
+                        <div class="request-modal-row" style="grid-column: 1 / -1;">
+                            <label class="request-modal-label">Foto del Beneficiario:</label>
+                            <div style="display: flex; align-items: center; gap: 16px; margin-top: 6px; padding: 12px; background: #f9f7f4; border: 1px dashed #c9c5c0; border-radius: 8px;">
+                                <div id="preview-beneficiario-box" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #e8e3dd; border: 2px solid #8a633d; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    @if(session('usuario.foto'))
+                                        <img id="preview-beneficiario-img" src="{{ asset('storage/' . session('usuario.foto')) }}" alt="Foto Beneficiario" style="width: 100%; height: 100%; object-fit: cover;">
+                                    @else
+                                        <i class="fa-solid fa-user" id="preview-beneficiario-icon" style="font-size: 26px; color: #8a633d;"></i>
+                                        <img id="preview-beneficiario-img" src="" alt="Foto Beneficiario" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    @endif
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" name="foto_beneficiario" id="input-foto-beneficiario" accept="image/*" style="font-size: 13px; color: #4a3627;" onchange="previewBeneficiaryPhoto(this)">
+                                    <div style="font-size: 12px; color: #7f6e61; margin-top: 4px;">Subir o actualizar foto del beneficiario (JPG, PNG, WEBP)</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="request-modal-row">
                             <label class="request-modal-label">Fecha Prestamo:</label>
@@ -1759,6 +1819,24 @@
 
         function closeLoanModal() {
             document.getElementById('request-loan-modal').classList.remove('is-open');
+        }
+
+        function previewBeneficiaryPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview-beneficiario-img');
+                    const icon = document.getElementById('preview-beneficiario-icon');
+                    if (img) {
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                    }
+                    if (icon) {
+                        icon.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         document.getElementById('request-loan-modal')?.addEventListener('click', function(e) {
@@ -1820,5 +1898,6 @@
             }
         }
     </style>
+    @include('partials.alerts')
 </body>
 </html>

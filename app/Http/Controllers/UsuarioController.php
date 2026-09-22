@@ -13,7 +13,8 @@ class UsuarioController extends Controller
     {
         $busqueda = trim($request->input('buscar', ''));
 
-        $usuarios = Usuario::with('rol')
+        $usuarios = Usuario::with(['rol', 'prestamos.libro'])
+            ->withCount('prestamos')
             ->when($busqueda !== '', function ($query) use ($busqueda) {
                 $query->where(function ($query) use ($busqueda) {
                     $query->where('nombre', 'like', "%{$busqueda}%")
@@ -46,6 +47,7 @@ class UsuarioController extends Controller
             'telefono' => 'nullable|string|max:50',
             'correo' => 'required|email|unique:usuario,email',
             'password' => 'required|string|min:6',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'documento.unique' => 'El número de documento ya está registrado.',
             'correo.unique' => 'El correo electrónico ya está registrado.',
@@ -54,6 +56,11 @@ class UsuarioController extends Controller
 
         $rolUsuario = Rol::where('descripcion', 'usuario')->first();
 
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('beneficiarios', 'public');
+        }
+
         Usuario::create([
             'nombre' => $datos['nombre'],
             'documento' => $datos['documento'],
@@ -61,6 +68,7 @@ class UsuarioController extends Controller
             'email' => $datos['correo'],
             'contraseña' => Hash::make($datos['password']),
             'id_rol' => $rolUsuario?->id_rol ?? 2,
+            'foto' => $fotoPath,
         ]);
 
         return redirect()
@@ -77,6 +85,7 @@ class UsuarioController extends Controller
             'correo' => 'required|email|unique:usuario,email',
             'password' => 'required|string|min:6|confirmed',
             'terminos' => 'accepted',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'terminos.accepted' => 'Debes aceptar los términos y condiciones para registrarte.',
             'documento.unique' => 'El número de documento ya está registrado.',
@@ -88,6 +97,11 @@ class UsuarioController extends Controller
         $rolUsuario = Rol::where('descripcion', 'usuario')->first();
         $idRol = $rolUsuario ? $rolUsuario->id_rol : 2;
 
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('beneficiarios', 'public');
+        }
+
         Usuario::create([
             'nombre' => $datos['nombre'],
             'documento' => $datos['documento'],
@@ -95,6 +109,7 @@ class UsuarioController extends Controller
             'email' => $datos['correo'],
             'contraseña' => Hash::make($datos['password']),
             'id_rol' => $idRol,
+            'foto' => $fotoPath,
         ]);
 
         return redirect()->route('login')->with('account_created', true);
@@ -113,6 +128,7 @@ class UsuarioController extends Controller
             'telefono' => 'nullable|string|max:50',
             'correo' => 'required|email|unique:usuario,email,' . $usuario->id_usuario . ',id_usuario',
             'password' => 'nullable|string|min:6',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'documento.unique' => 'El número de documento ya está registrado.',
             'correo.unique' => 'El correo electrónico ya está registrado.',
@@ -123,6 +139,10 @@ class UsuarioController extends Controller
         $usuario->documento = $datos['documento'];
         $usuario->telefono = $datos['telefono'] ?? null;
         $usuario->email = $datos['correo'];
+
+        if ($request->hasFile('foto')) {
+            $usuario->foto = $request->file('foto')->store('beneficiarios', 'public');
+        }
 
         if (!empty($datos['password'])) {
             $usuario->contraseña = Hash::make($datos['password']);

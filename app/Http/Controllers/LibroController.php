@@ -107,10 +107,10 @@ class LibroController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'idautor' => [
+            'autor_nombre' => [
                 'required',
-                'integer',
-                'exists:autor,idautor'
+                'string',
+                'max:100'
             ],
 
             'titulo' => [
@@ -138,6 +138,16 @@ class LibroController extends Controller
                 'max:2048',
             ],
         ]);
+
+        $autor = Autor::firstOrCreate(
+            ['nombre' => $datos['autor_nombre']],
+            [
+                'nacionalidad' => 'No registrada',
+                'librosescritos' => 0
+            ]
+        );
+        $datos['idautor'] = $autor->idautor;
+        unset($datos['autor_nombre']);
 
         if ($request->hasFile('imagen')) {
             $datos['imagen'] = $request->file('imagen')->store('libros', 'public');
@@ -173,10 +183,10 @@ class LibroController extends Controller
         Libro $libro
     ) {
         $datos = $request->validate([
-            'idautor' => [
+            'autor_nombre' => [
                 'required',
-                'integer',
-                'exists:autor,idautor'
+                'string',
+                'max:100'
             ],
 
             'titulo' => [
@@ -204,6 +214,16 @@ class LibroController extends Controller
                 'max:2048',
             ],
         ]);
+
+        $autor = Autor::firstOrCreate(
+            ['nombre' => $datos['autor_nombre']],
+            [
+                'nacionalidad' => 'No registrada',
+                'librosescritos' => 0
+            ]
+        );
+        $datos['idautor'] = $autor->idautor;
+        unset($datos['autor_nombre']);
 
         if ($request->hasFile('imagen')) {
             if ($libro->imagen) {

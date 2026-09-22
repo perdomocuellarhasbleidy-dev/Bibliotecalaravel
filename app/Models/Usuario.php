@@ -19,6 +19,7 @@ class Usuario extends Model
         'email',
         'contraseña',
         'id_rol',
+        'foto',
     ];
 
     protected $hidden = [

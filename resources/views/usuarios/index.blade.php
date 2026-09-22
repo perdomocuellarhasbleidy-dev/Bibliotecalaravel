@@ -687,18 +687,6 @@
 
         <section class="content">
 
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="beneficiary-error-alert">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             <div class="page-banner">
                 <h2>Gestión de Beneficiarios</h2>
             </div>
@@ -731,9 +719,36 @@
                     </thead>
                     <tbody>
                         @foreach($usuarios as $index => $usuario)
+                        @php($ultimoPrestamo = $usuario->prestamos->sortByDesc('idprestamo')->first())
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $usuario->nombre }}</td>
+                            <td>
+                                <div class="user-profile-trigger"
+                                     onclick="openBeneficiaryDetailModal({
+                                         nombre: '{{ addslashes($usuario->nombre) }}',
+                                         documento: '{{ addslashes($usuario->documento) }}',
+                                         telefono: '{{ addslashes($usuario->telefono ?? 'No registrado') }}',
+                                         email: '{{ addslashes($usuario->email) }}',
+                                         foto: '{{ $usuario->foto ? asset('storage/' . $usuario->foto) : '' }}',
+                                         rol: '{{ addslashes($usuario->rol->descripcion ?? 'Beneficiario') }}',
+                                         totalPrestamos: '{{ $usuario->prestamos_count }}',
+                                         ultimoLibro: '{{ addslashes($ultimoPrestamo->libro->titulo ?? 'Ninguno') }}',
+                                         ultimoFecha: '{{ optional($ultimoPrestamo?->fecha_prestamo)->format('Y-m-d') ?? '-' }}',
+                                         ultimoEstado: '{{ addslashes($ultimoPrestamo->estado ?? 'Sin préstamos') }}'
+                                     })"
+                                     style="display:flex; align-items:center; gap:10px; cursor:pointer;"
+                                     title="Clic para ver información detallada">
+                                    @if(!empty($usuario->foto))
+                                        <img src="{{ asset('storage/' . $usuario->foto) }}" alt="Foto" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid #75461f; flex-shrink:0;">
+                                    @else
+                                        <div style="width:36px; height:36px; border-radius:50%; background:#f0e6dd; color:#75461f; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; border:1px solid #d4c5b9;">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                    @endif
+                                    <span style="font-weight:600; color:#75461f; text-decoration:underline; text-underline-offset:3px;">{{ $usuario->nombre }}</span>
+                                    <i class="fa-solid fa-address-card" style="color:#9a6d48; font-size:13px;"></i>
+                                </div>
+                            </td>
                             <td>{{ $usuario->documento }}</td>
                             <td>{{ $usuario->telefono ?? '-' }}</td>
                             <td>{{ $usuario->email }}</td>
@@ -759,13 +774,17 @@
                             <h2 id="edit-beneficiary-title-{{ $usuario->id_usuario }}">Editar <strong>Beneficiario</strong></h2>
                         </div>
                         <div class="modal-body">
-                            <form action="{{ route('usuarios.update', $usuario->id_usuario) }}" method="POST">
+                            <form action="{{ route('usuarios.update', $usuario->id_usuario) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
                                 <div class="modal-grid">
                                     <div class="modal-field-full">
                                         <label for="edit-name-{{ $usuario->id_usuario }}">Nombre completo</label>
                                         <input type="text" id="edit-name-{{ $usuario->id_usuario }}" name="nombre" value="{{ $usuario->nombre }}" required>
+                                    </div>
+                                    <div class="modal-field-full">
+                                        <label for="edit-foto-{{ $usuario->id_usuario }}">Foto del Beneficiario</label>
+                                        <input type="file" id="edit-foto-{{ $usuario->id_usuario }}" name="foto" accept="image/*">
                                     </div>
                                     <div>
                                         <label for="edit-document-{{ $usuario->id_usuario }}">Documento</label>
@@ -878,12 +897,17 @@
                 </div>
             @endif
 
-            <form action="{{ route('usuarios.store') }}" method="POST">
+            <form action="{{ route('usuarios.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-grid">
                     <div class="modal-field-full">
                         <label for="modal-nombre">Nombre completo</label>
                         <input type="text" id="modal-nombre" name="nombre" value="{{ old('nombre') }}" required autofocus>
+                    </div>
+
+                    <div class="modal-field-full">
+                        <label for="modal-foto">Foto del Beneficiario</label>
+                        <input type="file" id="modal-foto" name="foto" accept="image/*">
                     </div>
 
                     <div>
@@ -984,6 +1008,96 @@
     });
 </script>
 
+<!-- Modal Detalles del Beneficiario -->
+<div class="user-detail-modal-overlay" id="beneficiary-detail-modal" onclick="if(event.target===this) closeBeneficiaryDetailModal()" style="position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+    <div class="user-detail-modal-box" style="width: min(520px, 92%); background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: modalSlideIn 0.3s ease;">
+        <header style="background: linear-gradient(135deg, #75461f, #3d2110); color: #ffffff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-address-card" style="font-size: 22px; color: #e8d0b5;"></i>
+                <h3 style="margin: 0; font-family: Georgia, serif; font-size: 20px; font-weight: bold; color: #ffffff;">Información del Beneficiario</h3>
+            </div>
+            <button type="button" onclick="closeBeneficiaryDetailModal()" style="background: transparent; border: none; color: #e8d0b5; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+
+        <div style="padding: 24px;">
+            <!-- Profile Header -->
+            <div style="display: flex; align-items: center; gap: 18px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid #efe8e1;">
+                <div id="beneficiary-detail-avatar-container" style="width: 76px; height: 76px; border-radius: 50%; border: 3px solid #75461f; overflow: hidden; background: #f5efe8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(117,70,31,0.2);">
+                    <img id="beneficiary-detail-avatar-img" src="" alt="Foto" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <i id="beneficiary-detail-avatar-icon" class="fa-solid fa-user" style="font-size: 36px; color: #75461f;"></i>
+                </div>
+                <div>
+                    <h2 id="beneficiary-detail-nombre" style="margin: 0 0 6px; font-size: 21px; font-weight: bold; color: #2e2118; font-family: Georgia, serif;">---</h2>
+                    <span id="beneficiary-detail-rol-badge" style="display: inline-block; padding: 4px 12px; background: #f0e6dd; color: #75461f; font-size: 12px; font-weight: 700; border-radius: 20px; border: 1px solid #d4c5b9;">Beneficiario</span>
+                </div>
+            </div>
+
+            <!-- Profile Info Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-id-card" style="margin-right: 5px;"></i> Documento</span>
+                    <strong id="beneficiary-detail-documento" style="font-size: 15px; color: #2e2118;">---</strong>
+                </div>
+
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-phone" style="margin-right: 5px;"></i> Teléfono</span>
+                    <strong id="beneficiary-detail-telefono" style="font-size: 15px; color: #2e2118;">---</strong>
+                </div>
+
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0; grid-column: span 2;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-envelope" style="margin-right: 5px;"></i> Correo Electrónico</span>
+                    <strong id="beneficiary-detail-email" style="font-size: 15px; color: #2e2118; word-break: break-all;">---</strong>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" onclick="closeBeneficiaryDetailModal()" style="padding: 10px 24px; background: #75461f; color: #ffffff; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(117,70,31,0.25);">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes modalSlideIn {
+        from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+</style>
+
+<script>
+    function openBeneficiaryDetailModal(info) {
+        document.getElementById('beneficiary-detail-nombre').textContent = info.nombre || 'Sin nombre';
+        document.getElementById('beneficiary-detail-documento').textContent = info.documento || '-';
+        document.getElementById('beneficiary-detail-telefono').textContent = info.telefono || 'No registrado';
+        document.getElementById('beneficiary-detail-email').textContent = info.email || '-';
+        document.getElementById('beneficiary-detail-rol-badge').textContent = info.rol || 'Beneficiario';
+
+        const img = document.getElementById('beneficiary-detail-avatar-img');
+        const icon = document.getElementById('beneficiary-detail-avatar-icon');
+        if (info.foto && info.foto.trim() !== '') {
+            img.src = info.foto;
+            img.style.display = 'block';
+            icon.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            icon.style.display = 'block';
+        }
+
+        const modal = document.getElementById('beneficiary-detail-modal');
+        modal.style.display = 'flex';
+    }
+
+    function closeBeneficiaryDetailModal() {
+        const modal = document.getElementById('beneficiary-detail-modal');
+        modal.style.display = 'none';
+    }
+</script>
+
+@include('partials.alerts')
 </body>
 
 </html>

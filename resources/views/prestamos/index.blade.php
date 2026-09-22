@@ -83,7 +83,6 @@
     <main class="main">
         <header class="topbar"><h1>Gestión de Préstamos</h1><div class="user"><div class="user-info"><strong>Bibliotecario</strong><span>{{ session('usuario.nombre', 'Michi') }}</span></div><div class="user-icon"><i class="fa-solid fa-user"></i></div></div></header>
         <section class="content">
-            @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
             <div class="hero"><h2>Gestión de Préstamos</h2></div>
             <div class="stats">
                 <div class="stat-card stat-total"><div class="stat-icon"><i class="fa-solid fa-book-open"></i></div><span>Total préstamos</span><strong>{{ $totalPrestamos }}</strong></div>
@@ -102,7 +101,35 @@
                             <tr>
                                 <td>{{ $prestamo->idprestamo }}</td>
                                 <td><strong>{{ $prestamo->libro->titulo ?? 'Sin libro' }}</strong></td>
-                                <td>{{ $prestamo->usuario->nombre ?? 'Sin beneficiario' }}</td>
+                                <td>
+                                    <div class="user-profile-trigger"
+                                         onclick="openBeneficiaryDetailModal({
+                                             nombre: '{{ addslashes($prestamo->usuario->nombre ?? 'Sin beneficiario') }}',
+                                             documento: '{{ addslashes($prestamo->usuario->documento ?? '-') }}',
+                                             telefono: '{{ addslashes($prestamo->usuario->telefono ?? 'No registrado') }}',
+                                             email: '{{ addslashes($prestamo->usuario->email ?? '-') }}',
+                                             foto: '{{ $prestamo->usuario?->foto ? asset('storage/' . $prestamo->usuario->foto) : '' }}',
+                                             rol: '{{ addslashes($prestamo->usuario->rol->descripcion ?? 'Beneficiario') }}',
+                                             libro: '{{ addslashes($prestamo->libro->titulo ?? 'Sin libro') }}',
+                                             fecha: '{{ optional($prestamo->fecha_prestamo)->format('Y-m-d') ?? '-' }}',
+                                             fechaDevolucion: '{{ optional($prestamo->devolucion?->fecha_devolucion)->format('Y-m-d') ?? '-' }}',
+                                             estado: '{{ addslashes($prestamo->estado ?? 'Desconocido') }}'
+                                         })"
+                                         style="display:flex; align-items:center; gap:10px; cursor:pointer;"
+                                         title="Clic para ver información detallada del beneficiario">
+                                        @if(!empty($prestamo->usuario?->foto))
+                                            <img src="{{ asset('storage/' . $prestamo->usuario->foto) }}" alt="Foto Beneficiario" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid #75461f; flex-shrink:0;">
+                                        @else
+                                            <div style="width:36px; height:36px; border-radius:50%; background:#f0e6dd; color:#75461f; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; border:1px solid #d4c5b9;">
+                                                <i class="fa-solid fa-user"></i>
+                                            </div>
+                                        @endif
+                                        <span style="font-weight:600; color:#75461f; text-decoration:underline; text-underline-offset:3px;">
+                                            {{ $prestamo->usuario->nombre ?? 'Sin beneficiario' }}
+                                        </span>
+                                        <i class="fa-solid fa-address-card" style="color:#9a6d48; font-size:13px;"></i>
+                                    </div>
+                                </td>
                                 <td>{{ $prestamo->usuario->documento ?? '-' }}</td>
                                 <td>{{ optional($prestamo->fecha_prestamo)->format('Y-m-d') ?? '-' }}</td>
                                 <td>{{ optional($prestamo->devolucion?->fecha_devolucion)->format('Y-m-d') ?? '-' }}</td>
@@ -134,5 +161,104 @@
         </section>
     </main>
 </div>
+
+<!-- Modal Detalles del Beneficiario -->
+<div class="user-detail-modal-overlay" id="beneficiary-detail-modal" onclick="if(event.target===this) closeBeneficiaryDetailModal()" style="position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);">
+    <div class="user-detail-modal-box" style="width: min(520px, 92%); background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
+        <header style="background: linear-gradient(135deg, #75461f, #3d2110); color: #ffffff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-address-card" style="font-size: 22px; color: #e8d0b5;"></i>
+                <h3 style="margin: 0; font-family: Georgia, serif; font-size: 20px; font-weight: bold; color: #ffffff;">Información del Beneficiario</h3>
+            </div>
+            <button type="button" onclick="closeBeneficiaryDetailModal()" style="background: transparent; border: none; color: #e8d0b5; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+
+        <div style="padding: 24px;">
+            <!-- Profile Header -->
+            <div style="display: flex; align-items: center; gap: 18px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid #efe8e1;">
+                <div id="detail-avatar-container" style="width: 76px; height: 76px; border-radius: 50%; border: 3px solid #75461f; overflow: hidden; background: #f5efe8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(117,70,31,0.2);">
+                    <img id="detail-avatar-img" src="" alt="Foto" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <i id="detail-avatar-icon" class="fa-solid fa-user" style="font-size: 36px; color: #75461f;"></i>
+                </div>
+                <div>
+                    <h2 id="detail-nombre" style="margin: 0 0 6px; font-size: 21px; font-weight: bold; color: #2e2118; font-family: Georgia, serif;">---</h2>
+                    <span id="detail-rol-badge" style="display: inline-block; padding: 4px 12px; background: #f0e6dd; color: #75461f; font-size: 12px; font-weight: 700; border-radius: 20px; border: 1px solid #d4c5b9;">Beneficiario</span>
+                </div>
+            </div>
+
+            <!-- Profile Info Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-id-card" style="margin-right: 5px;"></i> Documento</span>
+                    <strong id="detail-documento" style="font-size: 15px; color: #2e2118;">---</strong>
+                </div>
+
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-phone" style="margin-right: 5px;"></i> Teléfono</span>
+                    <strong id="detail-telefono" style="font-size: 15px; color: #2e2118;">---</strong>
+                </div>
+
+                <div style="background: #faf7f4; padding: 12px 16px; border-radius: 12px; border: 1px solid #eee7e0; grid-column: span 2;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: #8c7361; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;"><i class="fa-solid fa-envelope" style="margin-right: 5px;"></i> Correo Electrónico</span>
+                    <strong id="detail-email" style="font-size: 15px; color: #2e2118; word-break: break-all;">---</strong>
+                </div>
+            </div>
+
+            <!-- Loan Context Section -->
+            <div style="background: linear-gradient(135deg, #f7f2ed, #efe7df); padding: 14px 18px; border-radius: 14px; border: 1px solid #dfd3c5;">
+                <h4 style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #75461f; font-weight: 700;">Préstamo Asociado</h4>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; color: #4a3627;">
+                    <div><strong>Libro:</strong> <span id="detail-libro">---</span></div>
+                    <div><strong>Fecha de préstamo:</strong> <span id="detail-fecha">---</span></div>
+                    <div><strong>Fecha de devolución:</strong> <span id="detail-fecha-devolucion">---</span></div>
+                    <div><strong>Estado actual:</strong> <span id="detail-estado" style="font-weight: 700; color: #75461f;">---</span></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" onclick="closeBeneficiaryDetailModal()" style="padding: 10px 24px; background: #75461f; color: #ffffff; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(117,70,31,0.25);">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openBeneficiaryDetailModal(info) {
+        document.getElementById('detail-nombre').textContent = info.nombre || 'Sin nombre';
+        document.getElementById('detail-documento').textContent = info.documento || '-';
+        document.getElementById('detail-telefono').textContent = info.telefono || 'No registrado';
+        document.getElementById('detail-email').textContent = info.email || '-';
+        document.getElementById('detail-rol-badge').textContent = info.rol || 'Beneficiario';
+        document.getElementById('detail-libro').textContent = info.libro || 'Sin libro';
+        document.getElementById('detail-fecha').textContent = info.fecha || '-';
+        document.getElementById('detail-fecha-devolucion').textContent = info.fechaDevolucion || '-';
+        document.getElementById('detail-estado').textContent = info.estado || 'Desconocido';
+
+        const img = document.getElementById('detail-avatar-img');
+        const icon = document.getElementById('detail-avatar-icon');
+        if (info.foto && info.foto.trim() !== '') {
+            img.src = info.foto;
+            img.style.display = 'block';
+            icon.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            icon.style.display = 'block';
+        }
+
+        const modal = document.getElementById('beneficiary-detail-modal');
+        modal.style.display = 'flex';
+    }
+
+    function closeBeneficiaryDetailModal() {
+        const modal = document.getElementById('beneficiary-detail-modal');
+        modal.style.display = 'none';
+    }
+</script>
+
+@include('partials.alerts')
 </body>
 </html>

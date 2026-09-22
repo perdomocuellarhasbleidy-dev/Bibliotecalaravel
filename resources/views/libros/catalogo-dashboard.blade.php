@@ -78,7 +78,6 @@
     .dashboard-books .val-brown { color: #70431e; }
     .dashboard-books .val-green { color: #0a9b49; }
 
-    /* Search Filter Panel */
     .dashboard-books .book-filters {
         display: flex;
         gap: 14px;
@@ -295,17 +294,17 @@
         </div>
     </div>
 
-    @if(session('success') || request('mensaje') === 'eliminado')
-        <div class="book-success">{{ session('success') ?? 'Libro eliminado exitosamente.' }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="book-error">{{ session('error') }}</div>
-    @endif
-
     <!-- Search Form -->
     <form method="GET" action="{{ route('dashboard') }}" class="book-filters">
         <input type="hidden" name="modulo" value="libros">
+        
+        <input type="text" name="categoria" list="categorias-list" value="{{ request('categoria') ?? '' }}" placeholder="Escribe o elige categoría..." autocomplete="off">
+        <datalist id="categorias-list">
+            @foreach($categorias ?? \App\Models\Libro::select('categoria')->whereNotNull('categoria')->distinct()->pluck('categoria') as $cat)
+                <option value="{{ $cat }}"></option>
+            @endforeach
+        </datalist>
+
         <input type="text" name="buscar" value="{{ $buscar }}" placeholder="Buscar por título, autor, categoría, año o ubicación...">
         <button type="submit" class="book-search-button">Buscar</button>
     </form>
@@ -355,7 +354,6 @@
                 </div>
             </article>
 
-            <!-- Modal de Eliminación -->
             <div class="book-delete-modal" id="delete-book-{{ $libro->idlibro }}" role="dialog" aria-modal="true" aria-labelledby="delete-book-title-{{ $libro->idlibro }}">
                 <div class="book-delete-box">
                     <div class="book-warning">!</div>
@@ -397,11 +395,7 @@
                                 </div>
                                 <div class="book-modal-field-full">
                                     <label for="edit-author-{{ $libro->idlibro }}">Autor</label>
-                                    <select id="edit-author-{{ $libro->idlibro }}" name="idautor" required>
-                                        @foreach($autores as $autor)
-                                            <option value="{{ $autor->idautor }}" @selected($libro->idautor == $autor->idautor)>{{ $autor->idautor }} - {{ $autor->nombre }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" id="edit-author-{{ $libro->idlibro }}" name="autor_nombre" value="{{ $libro->autor->nombre ?? '' }}" placeholder="Escribe el nombre del autor..." autocomplete="off" required>
                                 </div>
                                 <div class="book-modal-field-full">
                                     <label for="edit-image-{{ $libro->idlibro }}">Cambiar imagen de portada</label>
@@ -491,12 +485,7 @@
                     </div>
                     <div class="book-modal-field-full">
                         <label for="new-book-author">Autor</label>
-                        <select id="new-book-author" name="idautor" required>
-                            <option value="">Seleccione un autor</option>
-                            @foreach($autores as $autor)
-                                <option value="{{ $autor->idautor }}" @selected(old('idautor') == $autor->idautor)>{{ $autor->nombre }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" id="new-book-author" name="autor_nombre" value="{{ old('autor_nombre') }}" placeholder="Escribe el nombre del autor..." autocomplete="off" required>
                     </div>
                 </div>
                 <div class="book-modal-actions">
@@ -559,3 +548,5 @@
         });
     });
 </script>
+
+@include('partials.alerts')

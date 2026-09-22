@@ -4,32 +4,16 @@
         Autor
     </label>
 
-    <select
-        name="idautor"
+    <input
+        type="text"
+        id="autor_nombre"
+        name="autor_nombre"
+        placeholder="Escribe el nombre del autor..."
+        autocomplete="off"
         required
+        value="{{ old('autor_nombre', $libro->autor->nombre ?? '') }}"
+        style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid #d4dbe5; border-radius: 10px;"
     >
-
-        <option value="">
-            Selecciona un autor
-        </option>
-
-        @foreach($autores as $autor)
-
-            <option
-                value="{{ $autor->idautor }}"
-                @selected(
-                    old(
-                        'idautor',
-                        $libro->idautor ?? ''
-                    ) == $autor->idautor
-                )
-            >
-                {{ $autor->nombre }}
-            </option>
-
-        @endforeach
-
-    </select>
 
 
     <label>

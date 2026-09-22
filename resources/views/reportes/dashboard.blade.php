@@ -185,5 +185,6 @@
 @if($imprimir)
     <script>window.addEventListener('load', () => window.print());</script>
 @endif
+@include('partials.alerts')
 </body>
 </html>

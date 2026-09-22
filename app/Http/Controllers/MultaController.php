@@ -56,4 +56,10 @@ class MultaController extends Controller
             ->route('dashboard', ['modulo' => 'multas'])
             ->with('success', '¡Multa eliminada con éxito!');
     }
+
+    public function imprimir(Multa $multa)
+    {
+        $multa->load('prestamo.usuario', 'prestamo.libro');
+        return view('multas.imprimir', compact('multa'));
+    }
 }

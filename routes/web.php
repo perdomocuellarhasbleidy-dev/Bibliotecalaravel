@@ -239,6 +239,11 @@ Route::middleware(
     )->name('multas.destroy');
 
     Route::get(
+        '/multas/{multa}/imprimir',
+        [MultaController::class, 'imprimir']
+    )->name('multas.imprimir');
+
+    Route::get(
         '/reportes',
         [ReporteController::class, 'index']
     )->name('reportes.index');

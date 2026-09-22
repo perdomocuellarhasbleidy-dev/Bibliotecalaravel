@@ -269,12 +269,6 @@
             </div>
         </header>
         <section class="content">
-            @if(session('success'))
-                <div class="alert-success" style="margin-bottom: 20px;">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert-error" style="margin-bottom: 20px;">{{ session('error') }}</div>
-            @endif
         .book-filters { grid-template-columns: 1fr; }
         .book-count { grid-column: auto; }
         .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -418,15 +412,22 @@
     <form method="GET" action="{{ route('libros.index') }}" class="book-filters">
         <input type="text" name="buscar" value="{{ $buscar }}" placeholder="Buscar por título, autor, categoría o año...">
 
-        <select name="categoria">
-            <option value="">Todas las categorías</option>
+        <input type="text" name="categoria" list="categorias-list" value="{{ $categoria ?? '' }}" placeholder="Escribe o elige categoría..." autocomplete="off">
+        <datalist id="categorias-list">
             @foreach($categorias as $cat)
-                <option value="{{ $cat }}" @selected($categoria === $cat)>{{ $cat }}</option>
+                <option value="{{ $cat }}"></option>
             @endforeach
-        </select>
+        </datalist>
 
         <button type="submit" class="book-search-button">Buscar</button>
-        <div class="book-count">Se encontraron {{ $libros->total() }} libro(s) en el catálogo.</div>
+        <div class="book-count">
+            Se encontraron {{ $libros->total() }} libro(s)
+            @if($categoria)
+                en la categoría <strong>{{ $categoria }}</strong>
+            @else
+                en el catálogo
+            @endif
+        </div>
     </form>
 
     <div class="book-grid">
@@ -550,5 +551,6 @@
     });
 </script>
 
+@include('partials.alerts')
 </body>
 </html>

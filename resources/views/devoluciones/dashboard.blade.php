@@ -58,9 +58,6 @@
 </style>
 
 <div class="dashboard-returns">
-    @if(session('success')) <div class="return-success">{{ session('success') }}</div> @endif
-    @if(session('error')) <div class="return-error">{{ session('error') }}</div> @endif
-
     <div class="return-hero"><h2>Gestión de Devoluciones</h2></div>
 
     <form method="GET" action="{{ route('dashboard') }}" class="return-toolbar">
@@ -227,3 +224,5 @@
         });
     });
 </script>
+
+@include('partials.alerts')
