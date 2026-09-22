@@ -93,6 +93,7 @@ class DashboardController extends Controller
                     ->withQueryString();
                 $datos['totalPrestamos'] = Prestamo::count();
                 $datos['activos'] = Prestamo::where('estado', 'Activo')->count();
+                $datos['pendientes'] = Prestamo::where('estado', 'Pendiente')->count();
                 $datos['devueltos'] = Prestamo::whereIn('estado', ['Devuelto', 'Devueltos'])->count();
                 $datos['rechazados'] = Prestamo::whereIn('estado', ['Rechazado', 'Rechazados'])->count();
             }
@@ -270,6 +271,7 @@ class DashboardController extends Controller
         $devueltos = $allPrestamos->whereIn('estado', ['Devuelto', 'Devueltos'])->count();
         $vencidos = $allPrestamos->where('estado', 'Vencido')->count();
         $pendientes = $allPrestamos->where('estado', 'Pendiente')->count();
+        $rechazados = $allPrestamos->whereIn('estado', ['Rechazado', 'Rechazados'])->count();
 
         $librosQuery = Libro::with('autor')
             ->withCount([
@@ -318,6 +320,7 @@ class DashboardController extends Controller
                 'devueltos',
                 'vencidos',
                 'pendientes',
+                'rechazados',
                 'modulo',
                 'buscar',
                 'categoria',

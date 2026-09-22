@@ -2,16 +2,17 @@
     .dashboard-loans { color: #2e2118; }
     .dashboard-loans .loan-hero { min-height: 112px; margin-bottom: 24px; padding: 34px 38px; border-radius: 26px; background: linear-gradient(110deg,#633a1d,#3d2110); box-shadow: 0 12px 20px rgba(66,38,18,.14); }
     .dashboard-loans .loan-hero h2 { margin: 0; color: #fff; font-size: 32px; }
-    .dashboard-loans .loan-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 24px; }
+    .dashboard-loans .loan-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 18px; margin-bottom: 24px; }
     .dashboard-loans .loan-stat { min-height: 155px; padding: 20px; border: 1px solid #e2e4e7; border-radius: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
     .dashboard-loans .loan-stat-icon { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; margin-bottom: 17px; border-radius: 15px; font-size: 18px; }
     .dashboard-loans .loan-stat span { display: block; color: #687791; font-size: 13px; }
     .dashboard-loans .loan-stat strong { display: block; margin-top: 10px; font-size: 34px; line-height: 1; }
     .dashboard-loans .total .loan-stat-icon { background: #f3ede5; color: #70431e; }
     .dashboard-loans .active .loan-stat-icon { background: #d9f8e5; color: #0a8b45; }
+    .dashboard-loans .pending .loan-stat-icon { background: #fff3da; color: #b8860b; }
     .dashboard-loans .returned .loan-stat-icon { background: #dceaff; color: #2455d7; }
     .dashboard-loans .rejected .loan-stat-icon { background: #ffe0e2; color: #c5252b; }
-    .dashboard-loans .total strong { color: #70431e; } .dashboard-loans .active strong { color: #0a9b49; } .dashboard-loans .returned strong { color: #2760e6; } .dashboard-loans .rejected strong { color: #df292d; }
+    .dashboard-loans .total strong { color: #70431e; } .dashboard-loans .active strong { color: #0a9b49; } .dashboard-loans .pending strong { color: #b8860b; } .dashboard-loans .returned strong { color: #2760e6; } .dashboard-loans .rejected strong { color: #df292d; }
     .dashboard-loans .loan-search { margin-bottom: 24px; padding: 20px; border: 1px solid #e2e4e7; border-radius: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
     .dashboard-loans .loan-search form { display: flex; gap: 15px; }
     .dashboard-loans .loan-search input { flex: 1; height: 48px; padding: 0 15px; border: 1px solid #d4dbe5; border-radius: 12px; font: 14px inherit; outline: none; }
@@ -24,9 +25,23 @@
     .dashboard-loans td { padding: 15px 16px; border-bottom: 1px solid #e3e5e8; color: #36557f; font-size: 13px; }
     .dashboard-loans td strong { color: #17120e; font-size: 14px; }
     .dashboard-loans .loan-status { display: inline-block; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .dashboard-loans .status-active { background: #d9f8e5; color: #0a8b45; } .dashboard-loans .status-returned { background: #dceaff; color: #2455d7; } .dashboard-loans .status-rejected { background: #ffe0e2; color: #c5252b; }
+    .dashboard-loans .status-active { background: #d9f8e5; color: #0a8b45; }
+    .dashboard-loans .status-returned { background: #dceaff; color: #2455d7; }
+    .dashboard-loans .status-rejected { background: #ffe0e2; color: #c5252b; }
+    .dashboard-loans .status-pending { background: #fff3da; color: #b8860b; }
+    .dashboard-loans .status-overdue { background: #ffe0e2; color: #c5252b; }
     .dashboard-loans .loan-delete { width: 38px; height: 38px; border: 0; border-radius: 50%; background: #4b5666; color: #fff; cursor: pointer; }
     .dashboard-loans .loan-empty { padding: 35px; color: #687791; text-align: center; }
+
+    /* Action buttons for accept/reject */
+    .dashboard-loans .loan-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .dashboard-loans .loan-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 34px; padding: 0 14px; border: 0; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .15s; }
+    .dashboard-loans .loan-action-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .dashboard-loans .btn-accept { background: #0a9b49; color: #fff; }
+    .dashboard-loans .btn-reject { background: #df292d; color: #fff; }
+    .dashboard-loans .btn-pending-disabled { background: #f0e6d6; color: #b8860b; cursor: default; opacity: .6; }
+    .dashboard-loans .btn-pending-disabled:hover { opacity: .6; transform: none; }
+
     .loan-confirm-modal { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.48); }
     .loan-confirm-modal.is-open { display: flex; }
     .loan-confirm-box { width: min(555px, 100%); padding: 43px 35px 28px; border-radius: 5px; background: #f5efe6; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
@@ -37,14 +52,33 @@
     .loan-confirm-actions button { height: 48px; padding: 0 21px; border: 0; border-radius: 4px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
     .loan-confirm-delete { background: #75461f; }
     .loan-confirm-cancel { background: #aeb8c7; }
+
+    /* Estado action modal */
+    .loan-estado-modal { position: fixed; inset: 0; z-index: 35; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.52); backdrop-filter: blur(3px); }
+    .loan-estado-modal.is-open { display: flex; }
+    .loan-estado-box { width: min(520px, 95%); padding: 38px 32px 26px; border-radius: 18px; background: #fff; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+    .loan-estado-icon { width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; margin: 0 auto 28px; border-radius: 50%; font-size: 40px; }
+    .loan-estado-icon.icon-accept { background: #d9f8e5; color: #0a8b45; border: 3px solid #a6f0bd; }
+    .loan-estado-icon.icon-reject { background: #ffe0e2; color: #c5252b; border: 3px solid #ffb3b6; }
+    .loan-estado-box h2 { margin: 0 0 12px; color: #2e2118; font-family: Georgia, "Times New Roman", serif; font-size: 26px; }
+    .loan-estado-box p { margin: 0 0 28px; color: #654b39; font-size: 16px; line-height: 1.5; }
+    .loan-estado-box .libro-name { font-weight: 700; color: #75461f; }
+    .loan-estado-actions { display: flex; justify-content: center; gap: 10px; }
+    .loan-estado-actions button { height: 46px; padding: 0 24px; border: 0; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+    .loan-estado-actions button:hover { opacity: .9; }
+    .loan-estado-confirm-accept { background: #0a9b49; }
+    .loan-estado-confirm-reject { background: #df292d; }
+    .loan-estado-cancel { background: #aeb8c7; }
+
     .dashboard-loans .loan-pagination { display: flex; justify-content: center; margin-top: 28px; }
     .dashboard-loans .loan-pagination nav { display: flex; align-items: center; gap: 8px; }
     .dashboard-loans .loan-pagination a, .dashboard-loans .loan-pagination span { display: flex; align-items: center; justify-content: center; min-width: 38px; height: 45px; padding: 0 12px; color: #6e4b30; font-size: 14px; text-decoration: none; }
     .dashboard-loans .loan-pagination a:hover { color: #3d2110; }
     .dashboard-loans .loan-pagination .active-page { border: 2px solid #75461f; border-radius: 8px; color: #3d2110; font-weight: 700; }
     .dashboard-loans .loan-pagination .disabled { color: #b8b2ac; }
+    @media (max-width: 1200px) { .dashboard-loans .loan-stats { grid-template-columns: repeat(3,1fr); } }
     @media (max-width: 1050px) { .dashboard-loans .loan-stats { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 760px) { .dashboard-loans .loan-stats { grid-template-columns: 1fr; } .dashboard-loans .loan-search form { flex-direction: column; } .dashboard-loans .loan-search button { width: 100%; height: 48px; } .dashboard-loans .loan-table { overflow-x: auto; } .dashboard-loans table { min-width: 900px; } }
+    @media (max-width: 760px) { .dashboard-loans .loan-stats { grid-template-columns: 1fr; } .dashboard-loans .loan-search form { flex-direction: column; } .dashboard-loans .loan-search button { width: 100%; height: 48px; } .dashboard-loans .loan-table { overflow-x: auto; } .dashboard-loans table { min-width: 1000px; } .dashboard-loans .loan-actions { flex-direction: column; } }
 </style>
 
 <div class="dashboard-loans">
@@ -52,6 +86,7 @@
 
     <div class="loan-stats">
         <div class="loan-stat total"><div class="loan-stat-icon"><i class="fa-solid fa-book-open"></i></div><span>Total préstamos</span><strong>{{ $totalPrestamos }}</strong></div>
+        <div class="loan-stat pending"><div class="loan-stat-icon"><i class="fa-solid fa-clock"></i></div><span>Pendientes</span><strong>{{ $pendientes ?? 0 }}</strong></div>
         <div class="loan-stat active"><div class="loan-stat-icon"><i class="fa-solid fa-circle-check"></i></div><span>Activos</span><strong>{{ $activos }}</strong></div>
         <div class="loan-stat returned"><div class="loan-stat-icon"><i class="fa-solid fa-rotate-left"></i></div><span>Devueltos</span><strong>{{ $devueltos }}</strong></div>
         <div class="loan-stat rejected"><div class="loan-stat-icon"><i class="fa-solid fa-circle-xmark"></i></div><span>Rechazados</span><strong>{{ $rechazados }}</strong></div>
@@ -72,6 +107,13 @@
             <tbody>
                 @forelse($prestamos as $prestamo)
                     @php($estado = strtolower($prestamo->estado ?? ''))
+                    @php($estadoClass = match(true) {
+                        str_contains($estado, 'activo') => 'status-active',
+                        str_contains($estado, 'pendiente') => 'status-pending',
+                        str_contains($estado, 'rechaz') => 'status-rejected',
+                        str_contains($estado, 'vencido') => 'status-overdue',
+                        default => 'status-returned',
+                    })
                     <tr>
                         <td>{{ $prestamo->idprestamo }}</td>
                         <td><strong>{{ $prestamo->libro->titulo ?? 'Sin libro' }}</strong></td>
@@ -107,8 +149,32 @@
                         <td>{{ $prestamo->usuario->documento ?? '-' }}</td>
                         <td>{{ optional($prestamo->fecha_prestamo)->format('Y-m-d') ?? '-' }}</td>
                         <td>{{ optional($prestamo->devolucion?->fecha_devolucion)->format('Y-m-d') ?? '-' }}</td>
-                        <td><span class="loan-status {{ str_contains($estado, 'activo') ? 'status-active' : (str_contains($estado, 'rechaz') ? 'status-rejected' : 'status-returned') }}">{{ $prestamo->estado }}</span></td>
-                        <td><form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST" class="loan-delete-form">@csrf @method('DELETE')<button class="loan-delete" type="button" data-loan-confirm><i class="fa-solid fa-trash"></i></button></form></td>
+                        <td><span class="loan-status {{ $estadoClass }}">{{ $prestamo->estado }}</span></td>
+                        <td>
+                            <div class="loan-actions">
+                                @if($prestamo->estado === 'Pendiente')
+                                    <button type="button" class="loan-action-btn btn-accept"
+                                            data-estado-action
+                                            data-action="Activo"
+                                            data-prestamo-id="{{ $prestamo->idprestamo }}"
+                                            data-libro-titulo="{{ addslashes($prestamo->libro->titulo ?? 'Sin libro') }}"
+                                            data-beneficiario="{{ addslashes($prestamo->usuario->nombre ?? 'Sin beneficiario') }}"
+                                            title="Aceptar solicitud">
+                                        <i class="fa-solid fa-check"></i> Aceptar
+                                    </button>
+                                    <button type="button" class="loan-action-btn btn-reject"
+                                            data-estado-action
+                                            data-action="Rechazado"
+                                            data-prestamo-id="{{ $prestamo->idprestamo }}"
+                                            data-libro-titulo="{{ addslashes($prestamo->libro->titulo ?? 'Sin libro') }}"
+                                            data-beneficiario="{{ addslashes($prestamo->usuario->nombre ?? 'Sin beneficiario') }}"
+                                            title="Rechazar solicitud">
+                                        <i class="fa-solid fa-xmark"></i> Rechazar
+                                    </button>
+                                @endif
+                                <form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST" class="loan-delete-form">@csrf @method('DELETE')<button class="loan-delete" type="button" data-loan-confirm><i class="fa-solid fa-trash"></i></button></form>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="8" class="loan-empty">No hay préstamos registrados.</td></tr>
@@ -148,6 +214,7 @@
     @endif
 </div>
 
+{{-- Modal: Confirmar eliminación de préstamo --}}
 <div class="loan-confirm-modal" id="loan-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="loan-confirm-title">
     <div class="loan-confirm-box">
         <div class="loan-warning">!</div>
@@ -160,7 +227,34 @@
     </div>
 </div>
 
+{{-- Modal: Confirmar aceptar/rechazar solicitud --}}
+<div class="loan-estado-modal" id="loan-estado-modal" role="dialog" aria-modal="true">
+    <div class="loan-estado-box">
+        <div class="loan-estado-icon" id="estado-modal-icon">
+            <i id="estado-modal-icon-i" class="fa-solid fa-check"></i>
+        </div>
+        <h2 id="estado-modal-title">¿Aceptar solicitud?</h2>
+        <p id="estado-modal-body">
+            ¿Deseas <strong id="estado-modal-action-text">aceptar</strong> la solicitud del libro
+            <span class="libro-name" id="estado-modal-libro">---</span>
+            solicitado por <strong id="estado-modal-beneficiario">---</strong>?
+        </p>
+        <div class="loan-estado-actions">
+            <button type="button" id="estado-modal-confirm" class="loan-estado-confirm-accept">Sí, aceptar</button>
+            <button type="button" id="estado-modal-cancel" class="loan-estado-cancel">Cancelar</button>
+        </div>
+
+        {{-- Hidden form that gets submitted --}}
+        <form id="estado-modal-form" method="POST" style="display:none;">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="estado" id="estado-modal-estado-input" value="">
+        </form>
+    </div>
+</div>
+
 <script>
+    // ---- Delete confirmation modal ----
     const loanConfirmModal = document.getElementById('loan-confirm-modal');
     const confirmLoanDelete = document.getElementById('confirm-loan-delete');
     const cancelLoanDelete = document.getElementById('cancel-loan-delete');
@@ -184,6 +278,60 @@
 
     loanConfirmModal.addEventListener('click', (event) => {
         if (event.target === loanConfirmModal) cancelLoanDelete.click();
+    });
+
+    // ---- Accept / Reject estado modal ----
+    const estadoModal = document.getElementById('loan-estado-modal');
+    const estadoModalIcon = document.getElementById('estado-modal-icon');
+    const estadoModalIconI = document.getElementById('estado-modal-icon-i');
+    const estadoModalTitle = document.getElementById('estado-modal-title');
+    const estadoModalActionText = document.getElementById('estado-modal-action-text');
+    const estadoModalLibro = document.getElementById('estado-modal-libro');
+    const estadoModalBeneficiario = document.getElementById('estado-modal-beneficiario');
+    const estadoModalConfirm = document.getElementById('estado-modal-confirm');
+    const estadoModalCancel = document.getElementById('estado-modal-cancel');
+    const estadoModalForm = document.getElementById('estado-modal-form');
+    const estadoModalEstadoInput = document.getElementById('estado-modal-estado-input');
+
+    document.querySelectorAll('[data-estado-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const action = button.dataset.action; // "Activo" or "Rechazado"
+            const prestamoId = button.dataset.prestamoId;
+            const libroTitulo = button.dataset.libroTitulo;
+            const beneficiario = button.dataset.beneficiario;
+            const isAccept = action === 'Activo';
+
+            // Update modal content
+            estadoModalIcon.className = 'loan-estado-icon ' + (isAccept ? 'icon-accept' : 'icon-reject');
+            estadoModalIconI.className = 'fa-solid ' + (isAccept ? 'fa-check' : 'fa-xmark');
+            estadoModalTitle.textContent = isAccept ? '¿Aceptar solicitud?' : '¿Rechazar solicitud?';
+            estadoModalActionText.textContent = isAccept ? 'aceptar' : 'rechazar';
+            estadoModalLibro.textContent = libroTitulo;
+            estadoModalBeneficiario.textContent = beneficiario;
+
+            // Update confirm button style
+            estadoModalConfirm.className = isAccept ? 'loan-estado-confirm-accept' : 'loan-estado-confirm-reject';
+            estadoModalConfirm.textContent = isAccept ? 'Sí, aceptar' : 'Sí, rechazar';
+
+            // Set form action and value
+            estadoModalForm.action = '/prestamos/' + prestamoId + '/estado';
+            estadoModalEstadoInput.value = action;
+
+            // Show modal
+            estadoModal.classList.add('is-open');
+        });
+    });
+
+    estadoModalConfirm.addEventListener('click', () => {
+        estadoModalForm.submit();
+    });
+
+    estadoModalCancel.addEventListener('click', () => {
+        estadoModal.classList.remove('is-open');
+    });
+
+    estadoModal.addEventListener('click', (event) => {
+        if (event.target === estadoModal) estadoModalCancel.click();
     });
 </script>
 

@@ -969,16 +969,36 @@
             .request-modal-row { grid-template-columns: 1fr; gap: 6px; }
         }
         @media print { 
-            body * { visibility: hidden; } 
-            .active-print-area, .active-print-area * { visibility: visible; } 
-            .active-print-area { position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 20px; box-shadow: none; border: none; background: #fff; } 
-            .fine-modal-actions { display: none !important; } 
-            .no-print { display: none !important; }
-            .print-report-area, .print-report-area * { visibility: visible; }
-            .print-report-area { position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 20px; box-shadow: none; border: none; background: #fff; }
-            .print-report-area .stat-card { box-shadow: none; border: 1px solid #ddd; }
-            .print-report-area table { page-break-inside: auto; }
-            .print-report-area tr { page-break-inside: avoid; }
+            /* Hide everything by default */
+            .sidebar, .topbar, .hero-card, .my-loans-notice-card, .no-print { display: none !important; } 
+            .fine-modal-actions { display: none !important; }
+            .main-wrapper { margin-left: 0 !important; padding: 0 !important; }
+            .content-area { padding: 0 !important; }
+
+            /* When printing a fine invoice modal */
+            body.printing-fine .sidebar, body.printing-fine .topbar, body.printing-fine .hero-card,
+            body.printing-fine .my-loans-notice-card, body.printing-fine .content-area { display: none !important; }
+            body.printing-fine .fine-modal.is-open { 
+                display: block !important; position: static !important; background: none !important; 
+                padding: 0 !important; overflow: visible !important; 
+            }
+            body.printing-fine .fine-modal.is-open .fine-modal-box { 
+                box-shadow: none !important; width: 100% !important; 
+            }
+
+            /* When printing reportes */
+            body.printing-reportes .sidebar, body.printing-reportes .topbar, body.printing-reportes .hero-card,
+            body.printing-reportes .my-loans-notice-card { display: none !important; }
+            body.printing-reportes .main-wrapper { margin: 0 !important; padding: 0 !important; }
+            body.printing-reportes .content-area { padding: 0 !important; }
+            body.printing-reportes #reportes-print-area { 
+                display: block !important; 
+            }
+            body.printing-reportes #reportes-print-area .stat-card { box-shadow: none; border: 1px solid #ddd; }
+            body.printing-reportes #reportes-print-area table { page-break-inside: auto; }
+            body.printing-reportes #reportes-print-area tr { page-break-inside: avoid; }
+            /* Hide filter bar and tabs when printing reportes */
+            body.printing-reportes .content-area > div:not(#reportes-print-area):not([id^="section"]) { }
         }
         .fine-modal { position: fixed; inset: 0; z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; background: rgba(0,0,0,.48); overflow-y: auto; }
         .fine-modal.is-open { display: flex; }
@@ -1179,16 +1199,21 @@
                     </div>
                 </div>
 
-                <!-- 4 Stat Cards Grid -->
-                <div class="stats-grid stats-grid-4">
+                <!-- 5 Stat Cards Grid -->
+                <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
                     <div class="stat-card">
                         <div class="stat-icon icon-brown"><i class="fa-solid fa-hands-holding-child"></i></div>
-                        <div class="stat-label">Total préstamos</div>
+                        <div class="stat-label">Total solicitudes</div>
                         <div class="stat-value val-brown">{{ $totalPrestamos ?? $prestamos->total() }}</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-icon icon-gold"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-label">Pendientes</div>
+                        <div class="stat-value" style="color: #e57200;">{{ $pendientes ?? 0 }}</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-icon icon-green"><i class="fa-solid fa-circle-check"></i></div>
-                        <div class="stat-label">Activos</div>
+                        <div class="stat-label">Aceptados</div>
                         <div class="stat-value val-green">{{ $activos ?? 0 }}</div>
                     </div>
                     <div class="stat-card">
@@ -1198,8 +1223,8 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <div class="stat-label">Vencidos</div>
-                        <div class="stat-value val-red">{{ $vencidos ?? 0 }}</div>
+                        <div class="stat-label">Rechazados</div>
+                        <div class="stat-value val-red">{{ $rechazados ?? 0 }}</div>
                     </div>
                 </div>
 
@@ -1771,10 +1796,12 @@
                     }
 
                     function printReportes() {
-                        const area = document.getElementById('reportes-print-area');
-                        area.classList.add('print-report-area');
+                        document.body.classList.add('printing-reportes');
                         window.print();
-                        setTimeout(() => area.classList.remove('print-report-area'), 500);
+                        window.onafterprint = function() {
+                            document.body.classList.remove('printing-reportes');
+                        };
+                        setTimeout(() => document.body.classList.remove('printing-reportes'), 1000);
                     }
                 </script>
 
@@ -2008,29 +2035,26 @@
             }
         }
     </script>
-    <style>
-        @media print {
-            .sidebar, .topbar, form, button, .my-loans-notice-card {
-                display: none !important;
-            }
-            .main {
-                margin-left: 0 !important;
-                width: 100% !important;
-                padding: 0 !important;
-            }
-            body {
-                background: #fff;
-            }
-        }
-    </style>
+
     @include('partials.alerts')
     <script>
         document.querySelectorAll('.open-print-fine').forEach((button) => {
             button.addEventListener('click', () => {
                 const modal = document.getElementById(button.dataset.printFine);
-                document.querySelectorAll('.print-fine-modal .fine-modal-box').forEach(box => box.classList.remove('active-print-area'));
-                modal.querySelector('.fine-modal-box').classList.add('active-print-area');
                 modal.classList.add('is-open');
+            });
+        });
+
+        // Print fine invoice from modal
+        document.querySelectorAll('.fine-modal .fine-modal-actions button[onclick="window.print()"]').forEach(btn => {
+            btn.removeAttribute('onclick');
+            btn.addEventListener('click', () => {
+                document.body.classList.add('printing-fine');
+                window.print();
+                window.onafterprint = function() {
+                    document.body.classList.remove('printing-fine');
+                };
+                setTimeout(() => document.body.classList.remove('printing-fine'), 1000);
             });
         });
     </script>
