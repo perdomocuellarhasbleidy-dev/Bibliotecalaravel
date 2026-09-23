@@ -1093,7 +1093,13 @@
                 <div class="catalog-search-panel">
                     <form method="GET" action="{{ route('dashboard') }}" class="catalog-search-form">
                         <input type="hidden" name="modulo" value="libros">
-                        <input type="text" name="buscar" value="{{ $buscar ?? '' }}" class="catalog-search-input" placeholder="Buscar por título, autor, categoría, año o ubicación...">
+                        <input type="text" name="buscar" value="{{ $buscar ?? '' }}" class="catalog-search-input" placeholder="Buscar por título, autor, año o ubicación...">
+                        <select name="categoria" class="catalog-search-input" style="flex: 0 0 220px; cursor: pointer; appearance: auto;">
+                            <option value="">Todas las categorías</option>
+                            @foreach($categorias as $cat)
+                                <option value="{{ $cat }}" {{ ($categoria ?? '') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
                         <button type="submit" class="catalog-search-btn">Buscar</button>
                     </form>
                 </div>
